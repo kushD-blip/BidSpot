@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="./css/site-pages.css">
   <script>
     try {
-      var t = localStorage.getItem('bidspot_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var t = localStorage.getItem('bidspot_theme') || 'light';
       document.documentElement.setAttribute('data-theme', t);
     } catch (e) {}
   </script>

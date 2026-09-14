@@ -286,9 +286,9 @@ class StateManager {
     this.USD_TO_INR = USD_TO_INR; // instance alias — ui.js reads state.USD_TO_INR directly
     this.currency = localStorage.getItem('bidspot_currency') || 'INR'; // 'INR' or 'USD'
     
-    // Auto-detect system dark theme preference if not set in localStorage
-    const systemPrefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    this.theme = localStorage.getItem('bidspot_theme') || (systemPrefersDark ? 'dark' : 'light');
+    // Light is the default regardless of system preference — only an explicit
+    // choice via the theme toggle (saved below) switches it to dark.
+    this.theme = localStorage.getItem('bidspot_theme') || 'light';
     
     this.categoryFilter = 'All';
     this.timeFilter = 'all-time';
