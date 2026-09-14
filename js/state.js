@@ -332,6 +332,11 @@ class StateManager {
     
     this.categoriesFromDb = [];
 
+    // Concurrent viewer count, kept in sync by subscribeToPresence() in app.js.
+    // Starts 0 (no channel joined yet); getLiveStats() reports 1 until the channel
+    // reports back so the visitor sees themselves rather than an empty "0".
+    this.presenceCount = 0;
+
     if (isSupabaseConfigured) {
       // Live site: no fabricated numbers. Starts empty and honest — loadFromSupabase()
       // (called from app.js) fills this in from the real database moments later.
@@ -599,12 +604,25 @@ class StateManager {
     return this.convertINRToUSD(topINR + incrementINR);
   }
 
+  /** Called by app.js whenever the Realtime presence channel reports a new head
+      count. Nudges the UI so the header pill re-renders with the current number. */
+  setPresenceCount(count) {
+    const n = Math.max(0, Number(count) || 0);
+    if (n === this.presenceCount) return;
+    this.presenceCount = n;
+    this.notify();
+  }
+
   getLiveStats() {
-    // Live site: no fabricated "X people online" presence simulation — show the
-    // real count (0 until real traffic exists) rather than inventing one.
+    // Real presence, not simulated. this.presenceCount is set by
+    // subscribeToPresence() in app.js from Supabase Realtime — every open tab
+    // (including this one) joins a shared channel and the count is unique keys
+    // in that channel's state. Until the channel has connected we deliberately
+    // show 1 so the visitor sees themselves rather than a hollow "0"; the demo
+    // dataset (no backend configured) keeps the small randomised local number.
     let activeOnline;
     if (isSupabaseConfigured) {
-      activeOnline = 0;
+      activeOnline = this.presenceCount > 0 ? this.presenceCount : 1;
     } else {
       const randomOffset = Math.floor(Math.random() * 21) - 5;
       activeOnline = Math.max(15, this.stats.baseActiveOnline + randomOffset);

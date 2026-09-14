@@ -2,7 +2,7 @@
 import { state } from './state.js';
 import { ui } from './ui.js';
 import { isSupabaseConfigured } from './config.js';
-import { subscribeToListingChanges } from './supabase-client.js';
+import { subscribeToListingChanges, subscribeToPresence } from './supabase-client.js';
 
 async function startApp() {
   // Apply saved theme state
@@ -39,6 +39,12 @@ async function startApp() {
     // Re-fetch whenever any listing changes (new bid, new approval) so other
     // visitors' activity shows up live without a page refresh.
     subscribeToListingChanges(() => state.loadFromSupabase());
+
+    // Real "X people looking at this right now" — every open tab (including this
+    // one) joins a Supabase Realtime presence channel; join/leave events feed
+    // state.setPresenceCount() so the header pill re-renders with the true count.
+    // Deliberately not fabricated: 0 was wrong ("but I'm here"), so is 15.
+    subscribeToPresence((count) => state.setPresenceCount(count));
   }
 
   console.log("🚀 BidSpot.in — Minimalist Viral Live Bidding Leaderboard initialized successfully.");

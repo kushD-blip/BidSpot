@@ -493,7 +493,11 @@ class UIManager {
     const pillText = document.getElementById('header-stats-text');
     if (!pillText) return;
     const stats = state.getLiveStats();
-    pillText.innerHTML = `<strong>${stats.activeOnlineFormatted} Active Bidders</strong> · ${stats.displayRevenueFormatted} Volume · Analytics`;
+    // "Viewing now" not "Active Bidders": presence is who's on the site, not who
+    // has bid. "Viewing now" reads right at any count (1 viewing now, 5 viewing
+    // now) where "1 viewers" or "1 bidders" would not. displayRevenueFormatted
+    // is the real cumulative bid volume, straight from the ledger.
+    pillText.innerHTML = `<strong>${stats.activeOnlineFormatted} viewing now</strong> · ${stats.displayRevenueFormatted} Volume · Analytics`;
   }
 
   renderAnalyticsData() {

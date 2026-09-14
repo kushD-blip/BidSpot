@@ -60,7 +60,9 @@
       <div class="nav-center">
         <a class="stats-pill" id="header-stats-pill" href="./analytics.html" title="View Analytics">
           <div class="pulse-dot"></div>
-          <span id="header-stats-text"><strong>30 Active Bidders</strong> · ₹1.18 Cr Volume · Analytics</span>
+          <!-- Placeholder before renderHeaderStats() runs. The real values are
+               populated by ui.js from real presence and real ledger volume. -->
+          <span id="header-stats-text"><strong>1 viewing now</strong> · ₹0 Volume · Analytics</span>
         </a>
       </div>
 
@@ -241,8 +243,8 @@
              hardcoded 2-column grid here could never collapse on a phone. -->
         <div class="analytics-card-grid">
           <div class="analytics-card">
-            <div class="analytics-val" id="analytics-online-val">30</div>
-            <div class="analytics-lbl">Active Live Bidders</div>
+            <div class="analytics-val" id="analytics-online-val">1</div>
+            <div class="analytics-lbl">Viewing now</div>
           </div>
           <div class="analytics-card">
             <div class="analytics-val" id="analytics-revenue-val">₹1.18 Cr</div>
