@@ -30,7 +30,7 @@ async function startApp() {
 
       const item = state.items.find((i) => i.id === outbidId);
       if (item) {
-        ui.openConfirmRankModal(String(item.rank), item.amountUSD + 5, item.title, item.category, item.url, item.id);
+        ui.openConfirmRankModal(String(item.rank), ui.outbidAmountUSD(item), item.title, item.category, item.url, item.id);
       } else {
         ui.showToast("That listing couldn't be found — it may have been removed.", "warning");
       }

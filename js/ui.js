@@ -1,12 +1,12 @@
 /* BidSpot — The Bidding House for Website Traffic */
-/* Dynamic UI Rendering, Text Navigation System & Stock Market Session Timer */
+/* Dynamic UI Rendering & Text Navigation System */
 
 import { state } from './state.js';
 import { confettiEngine } from './confetti.js';
 import { renderLogo } from './get-logo.js';
 import { submitListing, trackClick } from './supabase-client.js';
 import { isSupabaseConfigured } from './config.js';
-import { escapeHtml, MIN_BID_INR } from './listing-mapper.js';
+import { escapeHtml, unescapeHtml, MIN_BID_INR } from './listing-mapper.js';
 
 /** Parses a fetch Response as JSON, but fails with a readable message instead of a
     raw "Unexpected token '<'..." SyntaxError if the server actually returned an
@@ -31,12 +31,24 @@ class UIManager {
     this.bidAmountManuallySet = false;
     this.selectedPaymentMethod = 'upi';
     this.pendingConfirmData = null;
+    // Which category the current selectedBidAmountUSD was priced against, so
+    // updateHeroPriceDisplay() can re-anchor the suggestion when it changes.
+    this.lastPricedCategory = state.categoryFilter;
+  }
+
+  /** What it costs to take a given listing's spot: one increment above its total,
+      using the same proportional rule as the hero stepper (1%, floored at ₹10)
+      rather than the flat "+$5" (≈₹425) this used to hardcode — which was more
+      than four times the entire ₹100 minimum bid on a quiet board. */
+  outbidAmountUSD(item) {
+    const currentINR = item.amountINR ?? state.convertUSDToINR(item.amountUSD);
+    const incrementINR = Math.max(10, Math.round(currentINR * 0.01));
+    return state.convertINRToUSD(currentINR + incrementINR);
   }
 
   init() {
     this.bindEvents();
     this.render();
-    this.startTradingSessionTimer();
     this.initCategoryAutoScroll();
     state.subscribe(() => this.render());
   }
@@ -156,6 +168,15 @@ class UIManager {
       });
     }
 
+    // Hero category picker — the same selection as the chip bar above it, so
+    // choosing here re-ranks the board and re-prices the headline identically.
+    const heroCatSelect = document.getElementById('claim-category-select');
+    if (heroCatSelect) {
+      heroCatSelect.addEventListener('change', () => {
+        if (heroCatSelect.value) state.setCategory(heroCatSelect.value);
+      });
+    }
+
     // Hero Bid Form
     const heroForm = document.getElementById('hero-claim-form');
     if (heroForm) {
@@ -164,10 +185,19 @@ class UIManager {
         const urlInput = document.getElementById('claim-url-input');
         const catSelect = document.getElementById('claim-category-select');
         const url = urlInput ? urlInput.value.trim() : '';
-        const cat = (catSelect && catSelect.value) || 'Productivity';
-        
-        const projectedRank = state.getProjectedRank(this.selectedBidAmountUSD);
-        this.openConfirmRankModal(String(projectedRank), this.selectedBidAmountUSD, 'BidSpot Rank #' + projectedRank + ' Spot', cat, url);
+        const cat = catSelect && catSelect.value;
+
+        // The select is `required`, so the browser blocks submit before this in
+        // normal use — this covers the case where it's somehow bypassed, rather
+        // than silently filing the listing under Productivity as it used to.
+        if (!cat) {
+          this.showToast("Pick a category for your listing first.", "warning");
+          catSelect?.focus();
+          return;
+        }
+
+        const projectedRank = state.getProjectedRank(this.selectedBidAmountUSD, cat);
+        this.openConfirmRankModal(String(projectedRank), this.selectedBidAmountUSD, `BidSpot Rank #${projectedRank} Spot`, cat, url);
       });
     }
 
@@ -252,13 +282,17 @@ class UIManager {
         this.closeModal('modal-confirm-rank');
 
         if (this.pendingConfirmData) {
-          const { url, category, minUSD, listingId, title } = this.pendingConfirmData;
-          // Only prefill the title when this came from an existing card's outbid
-          // button (listingId set) — the hero form's placeholder title ("BidSpot
-          // Rank #1 Spot") must never leak into the field for a fresh submission.
-          this.openBidModalWithData(url, category, minUSD, listingId ? title : null);
+          const { url, category, minUSD, listingId } = this.pendingConfirmData;
+          // Outbidding someone else's card (listingId set) means listing YOUR site
+          // to beat theirs, so the form starts empty apart from the amount to beat
+          // and their category. Their URL/title are deliberately not prefilled:
+          // now that a bid on an already-listed URL tops that listing up, carrying
+          // their URL into this form would have quietly turned "outbid them" into
+          // "pay to push them further ahead". The hero form (no listingId) keeps
+          // whatever the visitor actually typed.
+          this.openBidModalWithData(listingId ? '' : url, category, minUSD, null);
         } else {
-          this.openBidModalWithData('', 'Productivity', state.getMinBidForRank1(), null);
+          this.openBidModalWithData('', state.categoryFilter, state.getMinBidForRank1(state.categoryFilter), null);
         }
       });
     }
@@ -279,6 +313,22 @@ class UIManager {
       amountInput.addEventListener('input', () => {
         this.renderModalPriceBreakup();
       });
+    }
+
+    // Typed URL decides whether this bid creates a listing or tops up an existing
+    // one, which also changes the projected rank — so re-check on every edit.
+    const bidUrlInput = document.getElementById('bid-url-input');
+    if (bidUrlInput) {
+      bidUrlInput.addEventListener('input', () => {
+        this.syncTopUpState();
+        this.renderModalPriceBreakup();
+      });
+    }
+
+    // Category drives the projected rank too (rank is per-category).
+    const bidCatSelect = document.getElementById('bid-category-select');
+    if (bidCatSelect) {
+      bidCatSelect.addEventListener('change', () => this.renderModalPriceBreakup());
     }
 
     // Quick Preset Chips
@@ -354,21 +404,6 @@ class UIManager {
     if (rzpBox) rzpBox.style.display = this.selectedPaymentMethod === 'razorpay' ? 'block' : 'none';
   }
 
-  startTradingSessionTimer() {
-    setInterval(() => {
-      const marketTimer = state.getStockMarketTimer();
-      const sidebarTimer = document.getElementById('sidebar-closing-timer');
-      const sidebarLabel = document.getElementById('sidebar-timer-label');
-      
-      if (sidebarTimer) {
-        sidebarTimer.textContent = marketTimer.displayString;
-      }
-      if (sidebarLabel) {
-        sidebarLabel.textContent = marketTimer.label;
-      }
-    }, 1000);
-  }
-
   render() {
     // Each section renders independently — one throwing (e.g. on an unexpected
     // data shape from Supabase) used to abort every section after it in this
@@ -409,7 +444,7 @@ class UIManager {
         <div class="trader-info">
           <div class="trader-title">${item.title}</div>
         </div>
-        <div class="trader-price">${state.formatAmount(item.amountUSD)}</div>
+        <div class="trader-price">${state.formatListingAmount(item)}</div>
       </div>
     `).join('');
 
@@ -467,9 +502,52 @@ class UIManager {
     if (prodEl) prodEl.textContent = stats.totalProductsFormatted;
   }
 
+  /** Builds the rolling chip row and both category dropdowns from state.getCategories()
+      — the database, not a hardcoded copy. Rebuilds only when the category list itself
+      actually changes, because replacing the row's innerHTML on every render() would
+      reset the auto-scroll position (and the visitor's own scroll) several times a
+      second. The fixed "All" and "Explore" chips live in index.html and aren't touched:
+      neither is a category. */
   renderCategoryChips() {
+    const categories = state.getCategories();
+    const signature = categories.map((c) => c.name).join('|');
+
+    if (signature !== this.renderedCategorySignature) {
+      this.renderedCategorySignature = signature;
+
+      const scroll = document.getElementById('category-scroll');
+      if (scroll) {
+        scroll.innerHTML = categories
+          .map((cat) => `
+            <button class="category-chip" data-category="${escapeHtml(cat.name)}">
+              <span class="chip-icon-emoji">${escapeHtml(cat.icon || '🏷️')}</span>
+              <span>${escapeHtml(cat.name)}</span>
+            </button>
+          `)
+          .join('');
+      }
+
+      this.renderCategoryOptions(categories);
+    }
+
     document.querySelectorAll('.category-chip').forEach(chip => {
       chip.classList.toggle('active', chip.dataset.category === state.categoryFilter);
+    });
+  }
+
+  /** Fills the hero and checkout category pickers. Each keeps its own current value
+      across a rebuild — the list can refresh underneath a half-filled checkout form
+      and must not silently clear the category the bidder already chose. */
+  renderCategoryOptions(categories) {
+    ['claim-category-select', 'bid-category-select'].forEach((id) => {
+      const select = document.getElementById(id);
+      if (!select) return;
+      const previous = select.value;
+      select.innerHTML = `<option value="" disabled${previous ? '' : ' selected'}>Select Category</option>`
+        + categories
+            .map((cat) => `<option value="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</option>`)
+            .join('');
+      if (previous) select.value = previous;
     });
   }
 
@@ -486,13 +564,25 @@ class UIManager {
     if (usdBtn) usdBtn.classList.toggle('active', state.currency === 'USD');
   }
 
-  // Updates Hero headline price AND dynamic target rank position (#1, #2, #5)!
+  // Updates the hero headline price AND the target rank — both scoped to whichever
+  // category is currently selected, so the headline names the same board the
+  // leaderboard below it is showing ("Claim Spot #2 in Fintech").
   updateHeroPriceDisplay() {
-    if (!this.bidAmountManuallySet) {
-      this.selectedBidAmountUSD = state.getMinBidForRank1();
+    const category = state.categoryFilter;
+
+    // Switching category changes which listings you'd actually be competing with,
+    // so a price the visitor hadn't hand-picked should re-anchor to the new
+    // category's floor instead of staying pinned to the previous one's.
+    if (this.lastPricedCategory !== category) {
+      this.lastPricedCategory = category;
+      this.bidAmountManuallySet = false;
     }
-    const projectedRank = state.getProjectedRank(this.selectedBidAmountUSD);
-    
+
+    if (!this.bidAmountManuallySet) {
+      this.selectedBidAmountUSD = state.getMinBidForRank1(category);
+    }
+    const projectedRank = state.getProjectedRank(this.selectedBidAmountUSD, category);
+
     const heroPriceEl = document.getElementById('hero-price-display');
     if (heroPriceEl) {
       heroPriceEl.textContent = state.formatAmount(this.selectedBidAmountUSD);
@@ -500,7 +590,17 @@ class UIManager {
 
     const headlineLabel = document.getElementById('hero-headline-label');
     if (headlineLabel) {
-      headlineLabel.innerHTML = `Claim Spot <span class="hero-rank-num">#${projectedRank}</span> Floor:`;
+      const inCategory = category && category !== 'All'
+        ? ` in <span class="hero-category-name">${escapeHtml(category)}</span>`
+        : '';
+      headlineLabel.innerHTML = `Claim Spot <span class="hero-rank-num">#${projectedRank}</span>${inCategory} Floor:`;
+    }
+
+    // One notion of "which category am I bidding into": the chips and this select
+    // are two controls over the same state.categoryFilter, so keep them in step.
+    const catSelect = document.getElementById('claim-category-select');
+    if (catSelect) {
+      catSelect.value = category && category !== 'All' ? category : '';
     }
   }
 
@@ -508,10 +608,14 @@ class UIManager {
     const container = document.getElementById('leaderboard-list');
     if (!container) return;
 
-    let filteredItems = state.items;
-    if (state.categoryFilter !== 'All') {
-      filteredItems = filteredItems.filter(item => item.category === state.categoryFilter);
-    }
+    const isCategoryView = state.categoryFilter !== 'All';
+    const filteredItems = state.getItemsInCategory(state.categoryFilter);
+
+    // While a category is selected the board is that category's own ranking, so
+    // the cards count 1, 2, 3… within it. Showing each listing's global rank here
+    // (#7, #12, #31) made a 3-listing category look like a broken, gap-riddled
+    // list. item.rank is still the board-wide rank and is what the "All" view uses.
+    const rankOf = (item, idx) => (isCategoryView ? idx + 1 : item.rank);
 
     if (filteredItems.length === 0) {
       const isWholeBoardEmpty = state.items.length === 0;
@@ -544,14 +648,14 @@ class UIManager {
       return;
     }
 
-    container.innerHTML = filteredItems.map(item => `
-      <div class="leaderboard-card rank-${item.rank}" data-url="${item.url}" data-id="${item.id}">
-        <button class="hover-claim-pill" data-outbid-id="${item.id}" data-min-usd="${item.amountUSD + 5}">
+    container.innerHTML = filteredItems.map((item, idx) => `
+      <div class="leaderboard-card rank-${rankOf(item, idx)}" data-url="${item.url}" data-id="${item.id}">
+        <button class="hover-claim-pill" data-outbid-id="${item.id}" data-min-usd="${this.outbidAmountUSD(item)}">
           <svg class="gavel-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
-          <span>Place Bid: ${state.formatAmount(item.amountUSD + 5)}</span>
+          <span>Place Bid: ${state.formatAmount(this.outbidAmountUSD(item))}</span>
         </button>
-        <div class="card-rank">#${item.rank}</div>
-        
+        <div class="card-rank">#${rankOf(item, idx)}</div>
+
         <div class="card-logo" style="background: ${item.logoBg};">
           ${item.logoText}
         </div>
@@ -560,6 +664,7 @@ class UIManager {
           <div class="card-title-row">
             <h3 class="card-title">${item.title}</h3>
             ${item.verified ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Verified Spot"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>` : ''}
+            ${item.foundingBidder ? `<span class="founding-badge" title="Founding Bidder — one of the first listings ever to claim a spot on BidSpot."><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>Founding</span>` : ''}
           </div>
           <p class="card-tagline">${item.tagline}</p>
           <div class="card-meta">
@@ -587,7 +692,7 @@ class UIManager {
 
         <div class="card-price-section">
           <span class="card-price-label">FLOOR BID</span>
-          <span class="card-price">${state.formatAmount(item.amountUSD)}</span>
+          <span class="card-price">${state.formatListingAmount(item)}</span>
         </div>
       </div>
     `).join('');
@@ -622,7 +727,7 @@ class UIManager {
         const card = btn.closest('.leaderboard-card');
         const rankText = card ? card.querySelector('.card-rank')?.textContent.replace('#', '') : '1';
         const title = card ? card.querySelector('.card-title')?.textContent : '';
-        const category = card ? card.querySelector('.category-tag')?.textContent.trim() : 'Productivity';
+        const category = card ? card.querySelector('.category-tag')?.textContent.trim() : '';
         const url = card ? card.dataset.url : '';
         const listingId = btn.dataset.outbidId || null;
         this.openConfirmRankModal(rankText, minUsd, title, category, url, listingId);
@@ -644,10 +749,65 @@ class UIManager {
     this.openModal('modal-confirm-rank');
   }
 
+  /** Re-checks the typed URL against the board and puts the checkout into either
+      "new listing" or "top up the existing listing" mode. Called whenever the URL
+      field changes. The existing listing's own category wins in top-up mode — a
+      listing can't be in two categories, and its bids all pool into one total. */
+  syncTopUpState() {
+    const urlInput = document.getElementById('bid-url-input');
+    const notice = document.getElementById('topup-notice');
+    const titleEl = document.getElementById('topup-notice-title');
+    const subEl = document.getElementById('topup-notice-sub');
+    const titleInput = document.getElementById('bid-title-input');
+    const catSelect = document.getElementById('bid-category-select');
+
+    const match = state.findListingByUrl(urlInput ? urlInput.value : '');
+    this.topUpListing = match;
+
+    if (!notice) return;
+
+    if (!match) {
+      notice.hidden = true;
+      if (titleInput) titleInput.readOnly = false;
+      if (catSelect) catSelect.disabled = false;
+      return;
+    }
+
+    // Title/category belong to the listing being topped up, so they're shown but
+    // not editable here — changing them would silently rewrite someone's live
+    // listing as a side effect of bidding on it.
+    if (titleInput) {
+      // An <input value> isn't HTML-parsed, so it needs the original text — the
+      // mapper stores these fields escaped for innerHTML consumers.
+      titleInput.value = unescapeHtml(match.title);
+      titleInput.readOnly = true;
+    }
+    if (catSelect) {
+      catSelect.value = match.category;
+      catSelect.disabled = true;
+    }
+
+    const categoryRank = state.getItemsInCategory(match.category).indexOf(match) + 1;
+    if (titleEl) titleEl.textContent = `${unescapeHtml(match.domain)} already holds a spot on the board.`;
+    if (subEl) {
+      subEl.textContent = `It's #${categoryRank} in ${match.category} with ${state.formatListingAmount(match)} bid so far. `
+        + `This bid is added to that total instead of creating a second listing.`;
+    }
+    notice.hidden = false;
+  }
+
+  /** The category this checkout is bidding into: the existing listing's own when
+      topping up, otherwise whatever the form has selected. */
+  currentBidCategory() {
+    if (this.topUpListing) return this.topUpListing.category;
+    const catSelect = document.getElementById('bid-category-select');
+    return (catSelect && catSelect.value) || state.categoryFilter;
+  }
+
   renderModalPriceBreakup() {
     const amountInput = document.getElementById('bid-amount-input');
     const rawVal = Number(amountInput && amountInput.value ? amountInput.value : 0);
-    
+
     let subtotalUSD = 0;
     let subtotalINR = 0;
 
@@ -666,7 +826,15 @@ class UIManager {
     const totalUSD = subtotalUSD;
     const totalINR = subtotalINR;
 
-    const projectedRank = state.getProjectedRank(subtotalUSD);
+    // Ranked within the category being bid into, matching the board the visitor
+    // is looking at. When topping up an existing listing the rank is driven by
+    // its *resulting* total (what's already been bid + this bid), not by this
+    // bid alone — a ₹200 top-up on a ₹50,000 listing doesn't drop it to last.
+    const bidCategory = this.currentBidCategory();
+    const effectiveUSD = this.topUpListing
+      ? this.topUpListing.amountUSD + subtotalUSD
+      : subtotalUSD;
+    const projectedRank = state.getProjectedRank(effectiveUSD, bidCategory);
 
     // The floor bid on the home page can't go below ₹100 (see MIN_BID_INR), but this
     // field is a free-typed number input — enforce and surface the same floor here,
@@ -761,9 +929,11 @@ class UIManager {
 
   // `prefillTitle` is only passed when this came from clicking "Outbid" on an
   // *existing* card — it's a suggested starting point (that listing's real name),
-  // not a claim on that listing. Submitting always creates a brand-new listing;
-  // outbidding someone doesn't add to their total, it means beating it with yours.
-  openBidModalWithData(url = '', category = 'Productivity', presetAmountUSD = null, prefillTitle = null) {
+  // not a claim on that listing. Outbidding someone else's listing creates your
+  // own new listing that beats it; the one case that does NOT create a new row is
+  // bidding on a URL that's already on the board, which tops that listing up
+  // instead (see syncTopUpState — House Rules allow one listing per website).
+  openBidModalWithData(url = '', category = '', presetAmountUSD = null, prefillTitle = null) {
     const urlInput = document.getElementById('bid-url-input');
     const catSelect = document.getElementById('bid-category-select');
     const amountInput = document.getElementById('bid-amount-input');
@@ -771,14 +941,20 @@ class UIManager {
 
     if (urlInput) urlInput.value = url;
     if (titleInput) titleInput.value = prefillTitle || '';
-    if (catSelect) catSelect.value = category || 'Productivity';
-    
-    const targetUSD = presetAmountUSD || this.selectedBidAmountUSD || state.getMinBidForRank1();
+    // "All" is a board filter, not a category a listing can belong to — leave the
+    // picker unset in that case so the bidder chooses, rather than silently
+    // defaulting their listing into Productivity.
+    if (catSelect) catSelect.value = !category || category === 'All' ? '' : category;
+
+    const targetUSD = presetAmountUSD || this.selectedBidAmountUSD || state.getMinBidForRank1(category);
     this.selectedBidAmountUSD = targetUSD;
     if (amountInput) {
       amountInput.value = state.currency === 'INR' ? state.convertUSDToINR(targetUSD) : Math.round(targetUSD);
     }
 
+    // Must run before renderModalPriceBreakup(): it decides the mode the breakup
+    // is priced and ranked in, and may override the title/category set above.
+    this.syncTopUpState();
     this.renderModalPriceBreakup();
     this.showCheckoutStep(1);
     this.openModal('modal-bid');
@@ -803,8 +979,19 @@ class UIManager {
     const url = document.getElementById('bid-url-input');
     const amountInput = document.getElementById('bid-amount-input');
 
+    const catSelect = document.getElementById('bid-category-select');
+
     if (!title || !title.value.trim() || !url || !url.value.trim()) {
       this.showToast("Add a title and URL before continuing.", "warning");
+      return;
+    }
+    // Caught here rather than defaulted at submit time — a listing filed under a
+    // category nobody chose is a wrong listing, not a reasonable fallback. (In
+    // top-up mode the picker is disabled but carries the existing listing's
+    // category, so this passes.)
+    if (!this.topUpListing && (!catSelect || !catSelect.value)) {
+      this.showToast("Pick a category for your listing before continuing.", "warning");
+      catSelect?.focus();
       return;
     }
     if (amountInput && amountInput.classList.contains('input-error')) {
@@ -826,7 +1013,9 @@ class UIManager {
     const title = titleInput ? titleInput.value.trim() : '';
     let url = urlInput ? urlInput.value.trim() : '';
     const tagline = taglineInput ? taglineInput.value.trim() : '';
-    const category = (catSelect && catSelect.value) || 'Productivity';
+    // A disabled <select> still reports its value, so top-up mode correctly
+    // carries the existing listing's category through here.
+    const category = this.currentBidCategory();
     const bidderName = nameInput ? nameInput.value.trim() : '';
     const bidderEmail = emailInput ? emailInput.value.trim() : '';
 
@@ -836,6 +1025,13 @@ class UIManager {
 
     if (!title || !url || amountUSD <= 0) {
       this.showToast("Please fill in all required fields.", "warning");
+      return;
+    }
+    // "All" is the board filter leaking through as a fallback, not a real category.
+    if (!category || category === 'All') {
+      this.showToast("Pick a category for your listing.", "warning");
+      this.showCheckoutStep(1);
+      document.getElementById('bid-category-select')?.focus();
       return;
     }
     if (amountRupees < MIN_BID_INR) {
@@ -868,20 +1064,35 @@ class UIManager {
 
     this.setBidSubmitLoading(true);
     try {
-      // Every bid creates a brand-new 'pending' listing — "outbidding" an existing
-      // card just pre-fills its name/category as an editable starting point (see
-      // openBidModalWithData), it does not add to that listing's own total. The new
-      // row only actually goes live once payment clears, in the handler below.
-      const categoryRow = (state.categoriesFromDb || []).find((c) => c.name === category);
-      const { data: newListing, error: submitErr } = await submitListing({
-        name: title,
-        url,
-        tagline,
-        categoryId: categoryRow ? categoryRow.id : null,
-        ownerEmail: bidderEmail,
-      });
-      if (submitErr) throw new Error(submitErr.message || "Could not create your listing.");
-      const listingId = newListing.id;
+      // Re-resolve against the live board rather than trusting the flag set while
+      // typing — another visitor's listing for this domain could have gone live in
+      // between (realtime keeps state.items current), and two listings for one site
+      // is exactly what House Rules forbid.
+      const existing = state.findListingByUrl(url);
+      this.topUpListing = existing;
+
+      let listingId;
+      if (existing) {
+        // Re-bidding a site that's already on the board: the bid is added to that
+        // listing's running total by increment_listing_totals in verify-payment.js,
+        // exactly as any of its earlier bids were. No new row, no duplicate.
+        listingId = existing.id;
+      } else {
+        // A brand-new site: create its 'pending' listing. It only actually goes
+        // live once payment clears, in verify-payment.js. "Outbidding" someone
+        // else's card lands here too — it beats their listing with your own new
+        // one, it does not add to theirs.
+        const categoryRow = (state.categoriesFromDb || []).find((c) => c.name === category);
+        const { data: newListing, error: submitErr } = await submitListing({
+          name: title,
+          url,
+          tagline,
+          categoryId: categoryRow ? categoryRow.id : null,
+          ownerEmail: bidderEmail,
+        });
+        if (submitErr) throw new Error(submitErr.message || "Could not create your listing.");
+        listingId = newListing.id;
+      }
 
       const orderRes = await fetch('/api/create-order', {
         method: 'POST',
@@ -897,7 +1108,7 @@ class UIManager {
         currency: order.currency,
         order_id: order.orderId,
         name: 'BidSpot.in',
-        description: `Rank bid — ${title}`,
+        description: existing ? `Rank top-up — ${existing.title}` : `Rank bid — ${title}`,
         prefill: { name: bidderName, email: bidderEmail },
         theme: { color: '#8B1E2E' },
         handler: async (response) => {
@@ -911,7 +1122,12 @@ class UIManager {
             if (!verifyRes.ok || !verifyData.ok) throw new Error(verifyData.error || "Payment could not be verified.");
 
             confettiEngine.launch();
-            this.showToast(`Payment confirmed! ${escapeHtml(title)} is now live on the leaderboard.`, "success");
+            this.showToast(
+              existing
+                ? `Payment confirmed! ${existing.title}'s bid total just went up.` // already escaped by the mapper
+                : `Payment confirmed! ${escapeHtml(title)} is now live on the leaderboard.`,
+              "success"
+            );
             this.closeModal('modal-bid');
             await state.loadFromSupabase();
           } catch (err) {
@@ -989,7 +1205,7 @@ class UIManager {
           <p class="card-tagline">${item.tagline}</p>
         </div>
         <div class="card-price-section">
-          <span class="card-price">${state.formatAmount(item.amountUSD)}</span>
+          <span class="card-price">${state.formatListingAmount(item)}</span>
         </div>
       </div>
     `).join('');
@@ -1018,7 +1234,7 @@ class UIManager {
             <div style="font-size: 0.76rem; color: var(--text-muted);">${item.category} · ${item.domain}</div>
           </div>
         </div>
-        <span style="font-family: var(--font-serif); font-weight: 800; color: var(--accent-primary); font-size: 0.95rem;">${state.formatAmount(item.amountUSD)}</span>
+        <span style="font-family: var(--font-serif); font-weight: 800; color: var(--accent-primary); font-size: 0.95rem;">${state.formatListingAmount(item)}</span>
       </div>
     `).join('');
   }

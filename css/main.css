@@ -454,6 +454,12 @@ button {
   border-color: var(--accent-primary);
 }
 
+/* The generic .chip-icon rule paints every chip icon muted grey; on Explore the
+   arrow should follow the chip's own accent (and turn white with it on hover). */
+.category-chip.explore-chip .chip-icon {
+  stroke: currentColor;
+}
+
 .chip-icon {
   width: 15px;
   height: 15px;
@@ -578,6 +584,14 @@ button {
   color: var(--accent-primary);
 }
 
+/* The category name in "Claim Spot #2 in Fintech" — sized down from the headline
+   so a long name like "Social & Creator Tools" doesn't dominate the hero line. */
+.hero-category-name {
+  color: var(--accent-primary);
+  font-size: 0.78em;
+  font-weight: 700;
+}
+
 .hero-headline {
   font-family: var(--font-serif);
   font-size: clamp(2.1rem, 4.2vw, 3.2rem);
@@ -631,52 +645,86 @@ button {
   border-color: var(--accent-primary);
 }
 
-/* Claim / Place Bid Form Bar */
+/* Claim / Place Bid Form Bar — the primary conversion control on the page, so it
+   reads as a solid, high-contrast composite field rather than the washed-out pale
+   bar it used to be. Three visually distinct segments (URL · category · action)
+   separated by a hairline, instead of three low-contrast items floating in a pill. */
 .claim-bar-form {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0;
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding: 6px 8px 6px 20px;
+  border: 1.5px solid var(--border-color);
+  padding: 7px 7px 7px 18px;
   border-radius: var(--radius-full);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .claim-bar-form:focus-within {
   border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px var(--accent-light);
 }
 
 .input-icon-svg {
-  stroke: var(--text-muted);
+  stroke: var(--accent-primary);
   flex-shrink: 0;
+  margin-right: 10px;
 }
 
 .claim-input {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 0.92rem;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--text-primary);
   outline: none;
-  min-width: 180px;
+  /* min-width:0 (not the default auto) so a long value shrinks inside the bar
+     instead of pushing the select and button past the form's own edge. */
+  min-width: 0;
+  padding: 10px 12px 10px 0;
 }
 
 .claim-input::placeholder {
   color: var(--text-muted);
+  font-weight: 500;
+  /* A placeholder that gets clipped mid-word reads as broken; ellipsize it. */
+  text-overflow: ellipsis;
 }
 
+/* Hairline divider between the typed URL and the category picker, so the bar
+   reads as two separate inputs rather than one long ambiguous text field. */
 .claim-select {
+  flex-shrink: 0;
+  max-width: 190px;
   border: none;
-  background: var(--bg-secondary);
-  padding: 8px 14px;
-  border-radius: var(--radius-full);
-  font-size: 0.84rem;
-  font-weight: 500;
+  border-left: 1px solid var(--border-color);
+  background: transparent;
+  padding: 10px 12px;
+  margin-right: 6px;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
   color: var(--text-secondary);
   outline: none;
   cursor: pointer;
+  text-overflow: ellipsis;
+  transition: color var(--transition-fast);
+}
+
+.claim-select:hover { color: var(--accent-primary); }
+.claim-select:focus-visible { color: var(--accent-primary); }
+
+/* The unselected "Select Category" prompt is a placeholder, not a value — mute it
+   so a real chosen category is visibly different from having chosen nothing. */
+.claim-select:invalid { color: var(--text-muted); font-weight: 500; }
+
+.claim-bar-form .btn-primary {
+  padding: 11px 26px;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 /* Maroon Place Bid Button */
@@ -1289,8 +1337,10 @@ button {
     padding-right: 16px;
   }
 
-  #sidebar-closing-timer {
-    max-width: 160px;
+  /* Was #sidebar-closing-timer, the live countdown element that no longer exists
+     now that bidding has no session window. */
+  .trading-timer-text {
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1328,19 +1378,39 @@ button {
     width: 100%;
   }
 
+  /* Below 640px the three segments can't share a row without the placeholder and
+     the category name both truncating — stack them as full-width rows instead. */
   .claim-bar-form {
     flex-wrap: wrap;
-    border-radius: var(--radius-md);
+    gap: 8px;
+    border-radius: var(--radius-lg);
     padding: 12px;
   }
 
   .claim-input {
-    min-width: 0;
     flex-basis: 100%;
+    padding: 6px 0;
+    order: 1;
+  }
+
+  .input-icon-svg {
+    display: none;
   }
 
   .claim-select {
-    flex: 1;
+    flex: 1 1 auto;
+    max-width: none;
+    order: 2;
+    border-left: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    margin-right: 0;
+    padding: 10px 14px;
+  }
+
+  .claim-bar-form .btn-primary {
+    order: 3;
+    padding: 11px 20px;
   }
 
   .btn-primary {

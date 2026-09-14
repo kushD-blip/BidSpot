@@ -7,6 +7,12 @@
 import crypto from "crypto";
 import { razorpay, supabaseAdmin } from "../lib/razorpay.js";
 
+// How many listings earn the Founding Bidder badge. Awarded to the first listings
+// that ever clear a payment — an earned, factual marker of being early, not a
+// fabricated scarcity counter. Raising this later only affects listings that go
+// live after the change; badges already awarded are never revoked.
+const FOUNDING_BIDDER_LIMIT = 20;
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -79,15 +85,26 @@ export default async function handler(req, res) {
   });
 
   // First paid bid on a listing takes it live — there's no admin approval queue
-  // yet, so a cleared payment is what actually publishes a new submission.
+  // yet, so a cleared payment is what actually publishes a new submission. The
+  // same call awards the Founding Bidder badge if this is one of the first
+  // FOUNDING_BIDDER_LIMIT listings to go live; it's one atomic SQL function so a
+  // burst of simultaneous payments can't over-award the badge (see schema.sql).
+  // A repeat bid on an already-live listing (a top-up) leaves both untouched.
   const { data: listing } = await supabaseAdmin
     .from("listings")
     .select("name, status")
     .eq("id", bid.listing_id)
     .single();
 
-  if (listing?.status === "pending") {
-    await supabaseAdmin.from("listings").update({ status: "approved" }).eq("id", bid.listing_id);
+  const { error: approveErr } = await supabaseAdmin.rpc("approve_listing_and_award_founding", {
+    p_listing_id: bid.listing_id,
+    p_limit: FOUNDING_BIDDER_LIMIT,
+  });
+
+  // The bid itself is already recorded and credited above — a failure to publish
+  // the listing shouldn't discard a real payment, so log loudly and continue.
+  if (approveErr) {
+    console.error("verify-payment: could not approve listing", bid.listing_id, approveErr);
   }
 
   await supabaseAdmin.from("activity_feed").insert({

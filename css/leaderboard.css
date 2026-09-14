@@ -158,16 +158,26 @@
   flex-wrap: wrap;
 }
 
+/* Deliberately the one highlighted item in the meta row: it's the only piece of
+   card metadata that's also a filter, so it reads as accent-colored and clickable
+   rather than blending into the muted timestamp/clicks text beside it. */
 .category-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  padding: 3px 10px;
-  border-radius: var(--radius-sm);
-  font-weight: 500;
-  color: var(--text-secondary);
+  gap: 5px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  padding: 3px 11px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  color: var(--accent-primary);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.category-tag:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
 }
 
 .meta-link {
@@ -283,3 +293,26 @@
     margin-top: 12px;
   }
 }
+
+/* Founding Bidder — one of the first listings ever to clear a payment. Awarded
+   automatically (see approve_listing_and_award_founding in schema.sql), so it's a
+   factual marker of being early rather than anything granted by hand. Styled apart
+   from the maroon accent so it doesn't read as just another category tag. */
+.founding-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-border);
+  color: var(--gold-text);
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.founding-badge svg { fill: currentColor; }

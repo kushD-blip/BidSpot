@@ -35,6 +35,20 @@ export function escapeHtml(str) {
   })[ch]);
 }
 
+/** Inverse of escapeHtml. Mapped item fields (title, tagline, domain…) are stored
+    HTML-escaped because almost every consumer writes them into innerHTML — but a
+    few need the original text instead: an <input value>, a .textContent node, or
+    document.title, none of which parse entities, so an escaped "A &amp; B" would
+    render literally as "A &amp;amp; B". Use this at exactly those call sites. */
+export function unescapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&'); // last: otherwise "&amp;lt;" would decode twice
+}
+
 export function timeAgo(isoString) {
   if (!isoString) return 'Just now';
   const diffMs = Date.now() - new Date(isoString).getTime();
@@ -57,6 +71,11 @@ export function mapSupabaseListing(row, { todayMode = false } = {}) {
   const domain = rawUrl.replace(/^(?:https?:\/\/)?(?:www\.)?/i, '').split('/')[0];
   const paise = todayMode ? row.total_bid_today : row.total_bid_alltime;
   const amountINR = Math.round((paise || 0) / 100);
+  // Both totals are always exposed, independent of which one `amountINR` is
+  // showing — product.html needs to state whether a listing has bid today
+  // while still ranking it by its all-time total.
+  const amountAlltimeINR = Math.round((row.total_bid_alltime || 0) / 100);
+  const amountTodayINR = Math.round((row.total_bid_today || 0) / 100);
   return {
     id: row.id,
     title: escapeHtml(row.name),
@@ -67,7 +86,7 @@ export function mapSupabaseListing(row, { todayMode = false } = {}) {
     // escaped "Agencies &amp; Services" silently failed to match the unescaped
     // "Agencies & Services" from fetchCategories(), so that category's own listing
     // never showed up on its own category page even though the data was correct.
-    category: row.categories?.name || 'Productivity',
+    category: row.categories?.name || 'Other',
     categorySlug: row.categories?.slug || '',
     url: escapeHtml(rawUrl),
     domain: escapeHtml(domain),
@@ -76,8 +95,14 @@ export function mapSupabaseListing(row, { todayMode = false } = {}) {
     clicks: row.clicks || 0,
     amountUSD: Math.round(amountINR / USD_TO_INR),
     amountINR,
+    amountAlltimeINR,
+    amountTodayINR,
+    createdAt: row.created_at || null,
     timestamp: timeAgo(row.created_at),
     verified: !!row.verified,
+    // One of the first listings to ever clear a payment on the board — awarded
+    // automatically in verify-payment.js, never granted by hand.
+    foundingBidder: !!row.founding_bidder,
     country: 'India',
   };
 }

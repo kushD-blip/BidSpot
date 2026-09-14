@@ -23,25 +23,55 @@ create table if not exists public.categories (
   sort_order int default 0
 );
 
+-- The category list. `on conflict (slug) do update` rather than `do nothing` so this
+-- one statement both seeds a fresh database AND renames/reorders an existing one.
+-- Renames are applied by SLUG, never by name: listings reference categories by
+-- category_id, so a renamed row carries all its existing listings with it — e.g.
+-- everything filed under the old 'Agencies & Services' is now under
+-- 'Agencies, Studios & Services' with no data migration and no orphaned listings.
+--
+-- Names are the public label AND the value the frontend matches on, so anything
+-- rendering a category (chips, dropdowns, category cards) reads this table rather
+-- than hardcoding a copy — a hardcoded chip list that had drifted out of sync with
+-- these rows is what previously made 9 of the categories unreachable from the home
+-- page filter bar.
 insert into public.categories (slug, name, icon, sort_order) values
-  ('productivity', 'Productivity', '⚡', 1),
-  ('ecommerce', 'Ecommerce', '🛒', 2),
-  ('fintech', 'Fintech', '💳', 3),
-  ('developer', 'Developer', '</>', 4),
-  ('ai-tools', 'AI Tools', '🤖', 5),
-  ('saas', 'SaaS', '💼', 6),
-  ('crypto', 'Crypto', '◎', 7),
-  ('marketing', 'Marketing', '📣', 8),
-  ('seo', 'SEO & Visibility', '🔍', 9),
-  ('design', 'Design & Creative', '🎨', 10),
-  ('business', 'Business & Finance', '⚖️', 11),
-  ('security', 'Security & Privacy', '🛡️', 12),
-  ('health', 'Health & Wellness', '❤️', 13),
-  ('social', 'Social & Creator Tools', '📱', 14),
-  ('hiring', 'Hiring & Careers', '📋', 15),
-  ('education', 'Education & Learning', '🎓', 16),
-  ('agencies', 'Agencies & Services', '🤝', 17)
-on conflict (slug) do nothing;
+  ('ai-tools',     'AI Agents & Infrastructure',        '🤖', 1),
+  ('seo',          'SEO & AI Visibility',               '🔍', 2),
+  ('marketing',    'Marketing & Advertising',           '📣', 3),
+  ('analytics',    'Analytics',                         '📊', 4),
+  ('crypto',       'Crypto, Web3 & Investing',          '◎', 5),
+  ('developer',    'Developer Tools',                   '⌨️', 6),
+  ('business',     'Business, Finance & Legal',         '⚖️', 7),
+  ('security',     'Security, Privacy & Compliance',    '🛡️', 8),
+  ('health',       'Health, Fitness & Wellness',        '❤️', 9),
+  ('social',       'Social Media & Creator Tools',      '📱', 10),
+  ('leaderboards', 'Leaderboards & Attention Markets',  '🏆', 11),
+  ('hiring',       'Hiring, Jobs & Careers',            '📋', 12),
+  ('education',    'Education & Learning',              '🎓', 13),
+  ('agencies',     'Agencies, Studios & Services',      '🤝', 14),
+  ('ecommerce',    'Ecommerce & Retail',                '🛒', 15),
+  ('domains',      'Domains & Web Assets',              '🌐', 16),
+  ('games',        'Games & Entertainment',             '🎮', 17),
+  ('people',       'People & Profiles',                 '👤', 18),
+  ('productivity', 'Productivity & Personal Tools',     '⚡', 19),
+  ('design',       'Design & Creative',                 '🎨', 20),
+  ('writing',      'Writing & Content',                 '✍️', 21),
+  ('directories',  'Directories, Launch & Discovery',   '🚀', 22),
+  ('ai-media',     'AI Media Generation',               '🎬', 23),
+  ('audio',        'Audio, Voice & Podcasting',         '🎙️', 24),
+  ('sales',        'Sales & Lead Generation',           '📈', 25),
+  ('travel',       'Travel, Local & Lifestyle',         '✈️', 26),
+  ('real-estate',  'Real Estate & Property',            '🏠', 27),
+  ('media-news',   'Media & News',                      '📰', 28),
+  ('other',        'Other',                             '🏷️', 29)
+on conflict (slug) do update
+  set name = excluded.name,
+      icon = excluded.icon,
+      sort_order = excluded.sort_order;
+
+-- (The retirement of the two categories this list drops happens after the listings
+--  table is created below — it has to check whether anything still references them.)
 
 -- Newer Supabase projects enable RLS by default on every new table, including this
 -- one — with zero policies, that means the anon key sees nothing at all even though
@@ -73,9 +103,28 @@ create table if not exists public.listings (
   created_at timestamptz default now()
 );
 
+-- Founding Bidder: awarded automatically to the first N listings that ever clear a
+-- payment (see approve_listing_and_award_founding below). Deliberately a separate
+-- column from `verified` rather than reusing it — House Rules defines `verified` as
+-- "established, recognizable brands", which is a different claim entirely, and
+-- overloading one flag with both meanings would make each badge unreadable.
+-- Stated as its own ALTER so re-running this file on an existing database adds the
+-- column (the CREATE TABLE above is `if not exists` and would skip it otherwise).
+alter table public.listings add column if not exists founding_bidder boolean default false;
+
 create index if not exists idx_listings_category on public.listings(category_id);
 create index if not exists idx_listings_alltime on public.listings(total_bid_alltime desc);
 create index if not exists idx_listings_today on public.listings(total_bid_today desc);
+
+-- 'fintech' and 'saas' have no equivalent in the category list above (that ground is
+-- covered by 'Business, Finance & Legal' / 'Crypto, Web3 & Investing' and by the more
+-- specific categories). Removed ONLY when nothing is filed under them — if a listing
+-- still references either, the row stays and that listing keeps working, rather than
+-- this script silently breaking a live listing's category. Placed here, after the
+-- listings table exists, because it has to check exactly that.
+delete from public.categories c
+where c.slug in ('fintech', 'saas')
+  and not exists (select 1 from public.listings l where l.category_id = c.id);
 
 -- 3. Bids (every paid bid, immutable ledger)
 create table if not exists public.bids (
@@ -148,6 +197,14 @@ begin
 end;
 $$ language plpgsql;
 
+-- This one runs with the *caller's* rights (no `security definer`), so RLS already
+-- stops the anon key from moving anyone's bid totals — it has no UPDATE policy on
+-- listings, and the update simply matches zero rows. Revoked from the browser roles
+-- anyway: it's the money path, and it should not be reachable at all from a page.
+revoke all on function increment_listing_totals(uuid, bigint) from public;
+revoke all on function increment_listing_totals(uuid, bigint) from anon, authenticated;
+grant execute on function increment_listing_totals(uuid, bigint) to service_role;
+
 -- Lets the anon key (browser, no UPDATE grant on listings under RLS) bump a
 -- listing's click counter without exposing any other write. security definer
 -- runs it as the function owner instead of the caller, bypassing RLS for just
@@ -164,6 +221,58 @@ end;
 $$ language plpgsql security definer set search_path = public;
 
 grant execute on function increment_listing_clicks(uuid) to anon, authenticated;
+
+-- Takes a listing live on its first cleared payment and, in the same atomic step,
+-- decides whether it earns the Founding Bidder badge (one of the first p_limit
+-- listings to ever go live). Called only by api/verify-payment.js with the service
+-- role key — never exposed to the browser, so no grant to anon here.
+--
+-- Doing the count and the update as two separate statements from Node would let two
+-- payments clearing at the same moment both read "19 approved" and both be awarded
+-- badge number 20. The advisory lock serializes exactly this function for the
+-- transaction's duration, so the count every caller reads already includes any
+-- listing a concurrent caller just approved.
+--
+-- Returns (approved, founding): `approved` is false when the listing was already
+-- live (a repeat bid / top-up, or a duplicate webhook + client callback), which is
+-- also what stops a listing that's already on the board from being re-badged.
+create or replace function approve_listing_and_award_founding(p_listing_id uuid, p_limit int)
+returns table(approved boolean, founding boolean) as $$
+declare
+  v_status text;
+  v_approved_count int;
+  v_founding boolean := false;
+begin
+  perform pg_advisory_xact_lock(hashtext('bidspot_founding_bidder'));
+
+  select status into v_status from listings where id = p_listing_id;
+
+  -- Unknown listing, or one that's already approved/rejected/removed: nothing to do.
+  if v_status is distinct from 'pending' then
+    return query select false, false;
+    return;
+  end if;
+
+  select count(*) into v_approved_count from listings where status = 'approved';
+  v_founding := v_approved_count < p_limit;
+
+  update listings
+  set status = 'approved',
+      founding_bidder = v_founding
+  where id = p_listing_id;
+
+  return query select true, v_founding;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+-- CRITICAL: Postgres grants EXECUTE on a new function to PUBLIC by default, and
+-- this one is SECURITY DEFINER — so without these revokes the anon key could call
+-- it directly from a browser and flip its own unpaid 'pending' listing to
+-- 'approved', publishing a listing without ever paying for it. Only the server's
+-- service role, which alone has already verified the Razorpay signature, may run it.
+revoke all on function approve_listing_and_award_founding(uuid, int) from public;
+revoke all on function approve_listing_and_award_founding(uuid, int) from anon, authenticated;
+grant execute on function approve_listing_and_award_founding(uuid, int) to service_role;
 
 -- Companion function used by api/cron/weekly-snapshot.js. Sums paid bids per listing
 -- within [p_week_start, p_week_end), ordered so the top bid per category comes first —

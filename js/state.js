@@ -7,13 +7,50 @@ import { USD_TO_INR, MIN_BID_INR, mapSupabaseListing } from './listing-mapper.js
 
 export { USD_TO_INR, MIN_BID_INR };
 
+/** Mirror of the `categories` table in schema.sql, used only when Supabase isn't
+    configured (local dev without credentials) so the chips and dropdowns still
+    render something. The database is the source of truth — the live site never
+    reads this. Keep the two in sync if you add a category; the names here must
+    match schema.sql exactly, because listings are matched to categories by name. */
+export const FALLBACK_CATEGORIES = [
+  { slug: 'ai-tools', name: 'AI Agents & Infrastructure', icon: '🤖' },
+  { slug: 'seo', name: 'SEO & AI Visibility', icon: '🔍' },
+  { slug: 'marketing', name: 'Marketing & Advertising', icon: '📣' },
+  { slug: 'analytics', name: 'Analytics', icon: '📊' },
+  { slug: 'crypto', name: 'Crypto, Web3 & Investing', icon: '◎' },
+  { slug: 'developer', name: 'Developer Tools', icon: '⌨️' },
+  { slug: 'business', name: 'Business, Finance & Legal', icon: '⚖️' },
+  { slug: 'security', name: 'Security, Privacy & Compliance', icon: '🛡️' },
+  { slug: 'health', name: 'Health, Fitness & Wellness', icon: '❤️' },
+  { slug: 'social', name: 'Social Media & Creator Tools', icon: '📱' },
+  { slug: 'leaderboards', name: 'Leaderboards & Attention Markets', icon: '🏆' },
+  { slug: 'hiring', name: 'Hiring, Jobs & Careers', icon: '📋' },
+  { slug: 'education', name: 'Education & Learning', icon: '🎓' },
+  { slug: 'agencies', name: 'Agencies, Studios & Services', icon: '🤝' },
+  { slug: 'ecommerce', name: 'Ecommerce & Retail', icon: '🛒' },
+  { slug: 'domains', name: 'Domains & Web Assets', icon: '🌐' },
+  { slug: 'games', name: 'Games & Entertainment', icon: '🎮' },
+  { slug: 'people', name: 'People & Profiles', icon: '👤' },
+  { slug: 'productivity', name: 'Productivity & Personal Tools', icon: '⚡' },
+  { slug: 'design', name: 'Design & Creative', icon: '🎨' },
+  { slug: 'writing', name: 'Writing & Content', icon: '✍️' },
+  { slug: 'directories', name: 'Directories, Launch & Discovery', icon: '🚀' },
+  { slug: 'ai-media', name: 'AI Media Generation', icon: '🎬' },
+  { slug: 'audio', name: 'Audio, Voice & Podcasting', icon: '🎙️' },
+  { slug: 'sales', name: 'Sales & Lead Generation', icon: '📈' },
+  { slug: 'travel', name: 'Travel, Local & Lifestyle', icon: '✈️' },
+  { slug: 'real-estate', name: 'Real Estate & Property', icon: '🏠' },
+  { slug: 'media-news', name: 'Media & News', icon: '📰' },
+  { slug: 'other', name: 'Other', icon: '🏷️' },
+];
+
 export const INITIAL_LEADERBOARD = [
   {
     id: "item-1",
     rank: 1,
     title: "Postman · API Platform for Developers",
     tagline: "Build, test, and iterate your APIs faster with 30M+ developers worldwide. Born in Bengaluru.",
-    category: "Developer",
+    category: "Developer Tools",
     url: "https://postman.com",
     domain: "postman.com",
     logoText: "PM",
@@ -31,7 +68,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 2,
     title: "Zerodha · Stock Broker & Trading",
     tagline: "Investing in stocks, derivatives, mutual funds, and more. Zero brokerage on equity delivery.",
-    category: "Fintech",
+    category: "Crypto, Web3 & Investing",
     url: "https://zerodha.com",
     domain: "zerodha.com",
     logoText: "ZD",
@@ -49,7 +86,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 3,
     title: "VibeCoding AI · AI Code Assistant",
     tagline: "Next-gen AI agentic suite that writes, tests, and deploys full-stack web applications effortlessly.",
-    category: "AI Tools",
+    category: "AI Agents & Infrastructure",
     url: "https://vibecoding.ai",
     domain: "vibecoding.ai",
     logoText: "VC",
@@ -67,7 +104,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 4,
     title: "Notion · AI Workspace",
     tagline: "Connected workspace where better, faster work happens with integrated AI doc generation.",
-    category: "Productivity",
+    category: "Productivity & Personal Tools",
     url: "https://notion.so",
     domain: "notion.so",
     logoText: "NT",
@@ -85,7 +122,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 5,
     title: "Shopify India · Ecommerce Platform",
     tagline: "Powering millions of businesses worldwide to sell online, on social media, and in-person.",
-    category: "Ecommerce",
+    category: "Ecommerce & Retail",
     url: "https://shopify.in",
     domain: "shopify.in",
     logoText: "SH",
@@ -103,7 +140,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 6,
     title: "Razorpay · Payments Infrastructure",
     tagline: "Full-stack financial services platform powering 8M+ businesses across India for seamless payments.",
-    category: "Fintech",
+    category: "Business, Finance & Legal",
     url: "https://razorpay.com",
     domain: "razorpay.com",
     logoText: "RZ",
@@ -121,7 +158,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 7,
     title: "Freshworks · CRM & Support Suite",
     tagline: "Customer service and IT service management software that is affordable and quick to deploy.",
-    category: "SaaS",
+    category: "Sales & Lead Generation",
     url: "https://freshworks.com",
     domain: "freshworks.com",
     logoText: "FW",
@@ -139,7 +176,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 8,
     title: "Zoho · Business Software Suite",
     tagline: "Run your entire business with 55+ integrated cloud apps. Trusted by 100M+ users globally.",
-    category: "SaaS",
+    category: "Business, Finance & Legal",
     url: "https://zoho.com",
     domain: "zoho.com",
     logoText: "ZH",
@@ -157,7 +194,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 9,
     title: "CRED · Credit Card Rewards App",
     tagline: "Pay credit card bills, win rewards, and access premium financial privileges in India.",
-    category: "Fintech",
+    category: "Business, Finance & Legal",
     url: "https://cred.club",
     domain: "cred.club",
     logoText: "CR",
@@ -175,7 +212,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 10,
     title: "Swiggy Instamart · Quick Commerce",
     tagline: "Groceries and daily essentials delivered to your doorstep in 10 minutes across India.",
-    category: "Ecommerce",
+    category: "Ecommerce & Retail",
     url: "https://swiggy.com",
     domain: "swiggy.com",
     logoText: "SW",
@@ -193,7 +230,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 11,
     title: "Groww · Investment Platform",
     tagline: "Direct mutual funds, stocks, IPOs, and gold investment platform for retail investors.",
-    category: "Fintech",
+    category: "Crypto, Web3 & Investing",
     url: "https://groww.in",
     domain: "groww.in",
     logoText: "GW",
@@ -211,7 +248,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 12,
     title: "PhonePe Business · Merchant Tools",
     tagline: "Accept digital payments via UPI QR codes, soundboxes, and merchant POS devices seamlessly.",
-    category: "Marketing",
+    category: "Business, Finance & Legal",
     url: "https://phonepe.com",
     domain: "phonepe.com",
     logoText: "PP",
@@ -247,7 +284,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 14,
     title: "Meesho · Social Commerce",
     tagline: "India's favorite online shopping destination for fashion, home, and lifestyle products.",
-    category: "Ecommerce",
+    category: "Ecommerce & Retail",
     url: "https://meesho.com",
     domain: "meesho.com",
     logoText: "MS",
@@ -265,7 +302,7 @@ export const INITIAL_LEADERBOARD = [
     rank: 15,
     title: "Dukaan · DIY Online Store Builder",
     tagline: "Set up an online e-commerce store in 30 seconds with custom domain and payment integration.",
-    category: "Crypto",
+    category: "Ecommerce & Retail",
     url: "https://mydukaan.io",
     domain: "mydukaan.io",
     logoText: "DK",
@@ -414,11 +451,29 @@ class StateManager {
     this.notify();
   }
 
+  /** INR is the currency bids are actually taken in, so it's the canonical amount
+      for ordering and comparison. amountUSD is a rounded display convenience
+      (Math.round(inr / 85)) and ranking by it silently collapsed distinct bids into
+      ties — ₹2,100 and ₹2,125 both round to $25, so which one ranked first was
+      arbitrary. Anything that decides a position uses this, not amountUSD. */
+  static amountInRupees(item) {
+    return item.amountINR ?? Math.round(Number(item.amountUSD || 0) * USD_TO_INR);
+  }
+
   sortAndRank() {
-    this.items.sort((a, b) => b.amountUSD - a.amountUSD);
+    this.items.sort((a, b) => StateManager.amountInRupees(b) - StateManager.amountInRupees(a));
     this.items.forEach((item, idx) => {
       item.rank = idx + 1;
     });
+  }
+
+  /** Formats a listing's bid for display. In INR it prints the real stored rupee
+      amount rather than round-tripping through the rounded USD figure, which made
+      a ₹2,100 listing read as "₹2,125" on the card — and then made the hero's
+      "beat it for ₹2,121" look like nonsense next to it. */
+  formatListingAmount(item) {
+    if (this.currency === 'INR') return this.formatINR(StateManager.amountInRupees(item));
+    return this.formatUSD(item.amountUSD);
   }
 
   convertUSDToINR(amountUSD) {
@@ -434,54 +489,10 @@ class StateManager {
     return Number(amountINR || 0) / USD_TO_INR;
   }
 
-  // Stock Market Bidding Session Timer (09:00 AM - 03:00 PM / 15:00)
-  getStockMarketTimer() {
-    const now = new Date();
-    const currentHours = now.getHours();
-    const currentMinutes = now.getMinutes();
-    const currentSeconds = now.getSeconds();
-    
-    // Check if between 09:00 and 15:00
-    const startHour = 9;
-    const closeHour = 15;
-    
-    const nowSecs = currentHours * 3600 + currentMinutes * 60 + currentSeconds;
-    const startSecs = startHour * 3600;
-    const closeSecs = closeHour * 3600;
-    
-    let isOpen = false;
-    let secondsRemaining = 0;
-    let label = '';
-
-    if (nowSecs >= startSecs && nowSecs < closeSecs) {
-      isOpen = true;
-      secondsRemaining = closeSecs - nowSecs;
-      label = 'Market Live (Closes at 3:00 PM)';
-    } else {
-      isOpen = false;
-      if (nowSecs < startSecs) {
-        secondsRemaining = startSecs - nowSecs;
-      } else {
-        secondsRemaining = (24 * 3600 - nowSecs) + startSecs;
-      }
-      label = 'Market Closed (Opens at 9:00 AM)';
-    }
-
-    const hours = Math.floor(secondsRemaining / 3600);
-    const minutes = Math.floor((secondsRemaining % 3600) / 60);
-    const seconds = secondsRemaining % 60;
-
-    const pad = (n) => String(n).padStart(2, '0');
-    const formattedTimer = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-
-    return {
-      isOpen,
-      label,
-      formattedTimer,
-      displayString: isOpen ? `${formattedTimer} left · Live Session` : `${formattedTimer} until 9:00 AM Open`
-    };
-  }
-
+  // There is deliberately no bidding-session timer here any more. Bidding used to
+  // be gated to a 9:00 AM - 3:00 PM "stock market session", which held bidders to
+  // someone else's clock for no real reason — the board is open 24/7 and a paid
+  // bid re-ranks immediately.
 
   formatAmount(amountUSD, overrideCurrency = null) {
     const curr = overrideCurrency || this.currency;
@@ -509,17 +520,64 @@ class StateManager {
     return '₹' + Number(amountINR || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  getProjectedRank(amountUSD) {
-    const num = Number(amountUSD || 0);
+  /** Every listing in one category, in the same descending-bid order as the board.
+      `'All'` (or omitted) means the whole board. `this.items` is already sorted by
+      sortAndRank(), so filtering preserves the ordering — index+1 is that listing's
+      rank *within the category*, which is what the board shows while a category
+      chip is active. */
+  /** The single source every category control renders from — the chip bar, both
+      category dropdowns, and the demo dataset's own sanity. Real rows from Supabase
+      when they've loaded, the static mirror otherwise, so nothing hardcodes its own
+      copy of the list and drifts out of sync with the database. */
+  getCategories() {
+    return this.categoriesFromDb.length > 0 ? this.categoriesFromDb : FALLBACK_CATEGORIES;
+  }
+
+  getItemsInCategory(category = 'All') {
+    if (!category || category === 'All') return this.items;
+    return this.items.filter((item) => item.category === category);
+  }
+
+  /** Where a bid of `amountUSD` would land — within `category` when one is selected,
+      otherwise across the whole board. Selecting "Fintech" and being told you'd be
+      "#7" (your position among *all* listings) was meaningless when the board next
+      to it only showed 3 Fintech listings ranked #1-#3. */
+  getProjectedRank(amountUSD, category = 'All') {
+    // Compared in rupees for the same reason sortAndRank() orders by them: at the
+    // ₹100-₹5,000 amounts real bids actually land at, the rounded USD figure is far
+    // too coarse to rank with. Beating a ₹2,100 listing by ₹21 used to be reported
+    // as rank #2, because both amounts rounded to the same $25.
+    const amountINR = this.convertUSDToINR(amountUSD);
     let rank = 1;
-    for (const item of this.items) {
-      if (num < item.amountUSD) {
+    for (const item of this.getItemsInCategory(category)) {
+      if (amountINR < StateManager.amountInRupees(item)) {
         rank++;
       } else {
         break;
       }
     }
     return rank;
+  }
+
+  /** Normalizes a typed URL or @handle down to the bare host, so "Postman.com/",
+      "https://www.postman.com/docs" and "postman.com" all resolve to the same
+      listing. Mirrors the domain extraction in listing-mapper.js. */
+  static normalizeDomain(input) {
+    return String(input || '')
+      .trim()
+      .toLowerCase()
+      .replace(/^(?:https?:\/\/)?(?:www\.)?/i, '')
+      .split(/[/?#]/)[0]
+      .replace(/\.$/, '');
+  }
+
+  /** The listing already holding a spot for this URL, if any. House Rules allow one
+      listing per website, so bidding on a site that's already on the board is a
+      top-up of that listing's total — not a second listing competing with itself. */
+  findListingByUrl(input) {
+    const domain = StateManager.normalizeDomain(input);
+    if (!domain) return null;
+    return this.items.find((item) => StateManager.normalizeDomain(item.domain) === domain) || null;
   }
 
   getHighestBidUSD() {
@@ -531,9 +589,12 @@ class StateManager {
   // (₹8,925), a leftover demo-dataset constant that had nothing to do with the
   // actual ₹100 rule. Once there's a bid to beat, the increment is proportional
   // (1% of the current top bid, floored at ₹10) instead of a flat, meaningless "+5".
-  getMinBidForRank1() {
-    if (this.items.length === 0) return this.convertINRToUSD(MIN_BID_INR);
-    const topINR = this.items[0].amountINR;
+  // Scoped to `category` when one is selected: topping an empty/quiet category costs
+  // ₹100, not whatever the #1 listing on the entire board happens to be sitting at.
+  getMinBidForRank1(category = 'All') {
+    const scoped = this.getItemsInCategory(category);
+    if (scoped.length === 0) return this.convertINRToUSD(MIN_BID_INR);
+    const topINR = StateManager.amountInRupees(scoped[0]);
     const incrementINR = Math.max(10, Math.round(topINR * 0.01));
     return this.convertINRToUSD(topINR + incrementINR);
   }
@@ -549,9 +610,12 @@ class StateManager {
       activeOnline = Math.max(15, this.stats.baseActiveOnline + randomOffset);
     }
 
-    const itemsTotalUSD = this.items.reduce((sum, item) => sum + (item.amountUSD || 0), 0);
-    const totalRevenueUSD = Math.max(this.stats.totalRevenueUSD, itemsTotalUSD);
-    const totalRevenueINR = Math.round(totalRevenueUSD * USD_TO_INR);
+    // Totalled in rupees, then converted — summing the rounded per-listing USD
+    // figures and converting back inflated the headline "volume" by up to ₹42 per
+    // listing (a single ₹2,100 listing reported ₹2,125 of volume).
+    const itemsTotalINR = this.items.reduce((sum, item) => sum + StateManager.amountInRupees(item), 0);
+    const totalRevenueINR = Math.max(Math.round(this.stats.totalRevenueUSD * USD_TO_INR), itemsTotalINR);
+    const totalRevenueUSD = Math.round(totalRevenueINR / USD_TO_INR);
 
     const totalProducts = isSupabaseConfigured
       ? this.items.length
@@ -564,7 +628,9 @@ class StateManager {
       totalRevenueUSDFormatted: '$' + totalRevenueUSD.toLocaleString('en-US'),
       totalRevenueINR: totalRevenueINR,
       totalRevenueINRFormatted: '₹' + totalRevenueINR.toLocaleString('en-IN'),
-      displayRevenueFormatted: this.formatAmount(totalRevenueUSD),
+      displayRevenueFormatted: this.currency === 'INR'
+        ? this.formatINR(totalRevenueINR)
+        : this.formatUSD(totalRevenueUSD),
       totalProducts: totalProducts,
       totalProductsFormatted: totalProducts.toLocaleString('en-US'),
       activeOnline: activeOnline,
@@ -606,7 +672,9 @@ class StateManager {
       id: 'item-' + Date.now(),
       title,
       tagline: tagline || `Discover ${title} on BidSpot.`,
-      category: category || "Productivity",
+      // "Other" rather than Productivity: if a category somehow didn't come through,
+      // parking the listing in an unrelated real category is worse than saying so.
+      category: category || "Other",
       url: url.startsWith('http') ? url : 'https://' + url,
       domain,
       logoText,

@@ -93,39 +93,5 @@
   font-size: 0.88rem;
 }
 
-.site-footer {
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  padding: 36px 28px;
-  font-family: var(--font-sans);
-}
-
-.site-footer-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.site-footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-}
-
-.site-footer-links a {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-.site-footer-links a:hover { color: var(--accent-primary); }
-
-.site-footer-copy {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
+/* The .site-footer rules that used to live here now live in css/footer.css —
+   every page links that file, not just the static pages that link this one. */

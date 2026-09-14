@@ -565,3 +565,56 @@
   color: var(--text-muted);
 }
 
+
+/* "This site is already on the board" notice in checkout step 1 — shown when the
+   typed URL matches a live listing, so the bid tops that listing up instead of
+   creating a duplicate (House Rules: one listing per website). */
+/* A class rule with `display` outranks the UA stylesheet's [hidden]{display:none},
+   so this needs to opt back in explicitly — without it the notice rendered as an
+   empty pink box on every single checkout. */
+.topup-notice[hidden] { display: none; }
+
+.topup-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--accent-primary);
+}
+
+.topup-notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.topup-notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.topup-notice-text strong {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.topup-notice-text span {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* A field held by the listing being topped up — readable, but clearly not editable
+   here, since changing it would rewrite someone's live listing as a side effect. */
+.form-input[readonly],
+.form-select:disabled {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 1; /* override the browser's default washed-out disabled rendering */
+}
