@@ -350,51 +350,9 @@ button {
   min-width: 0;
 }
 
-.category-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.category-header-title {
-  font-family: var(--font-serif);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.trading-session-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--accent-light);
-  border: 1px solid var(--accent-border);
-  padding: 5px 14px;
-  border-radius: var(--radius-full);
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--accent-primary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.trading-session-pill:hover {
-  background: var(--accent-primary);
-  color: #ffffff;
-  border-color: var(--accent-primary);
-}
-
-.trading-session-pill:hover .pulse-dot {
-  background-color: #ffffff;
-}
+/* The "SELECT CATEGORY" label and the "Open 24/7" status pill that used to sit
+   above this row are gone — the chips are self-evidently a category filter, and the
+   pill was a leftover of the removed trading-session countdown. */
 
 .category-bar {
   display: flex;
@@ -1336,17 +1294,6 @@ button {
     padding-left: 16px;
     padding-right: 16px;
   }
-
-  /* Was #sidebar-closing-timer, the live countdown element that no longer exists
-     now that bidding has no session window. */
-  .trading-timer-text {
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-    vertical-align: middle;
-  }
 }
 
 /* ============================================================
@@ -1420,6 +1367,41 @@ button {
 
   .most-active-categories-section .section-header {
     text-align: center;
+  }
+
+  /* Category bar: the two fixed chips share the top line (Explore pushed to the
+     far edge, mirroring desktop), and the rolling strip drops to its own full-width
+     line underneath. Sharing one line with them left the strip ~100px wide, which
+     clipped every category mid-word. */
+  .category-bar {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding-bottom: 8px;
+  }
+
+  .category-bar .pinned-chip {
+    order: 1;
+  }
+
+  .category-bar .explore-chip {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .category-scroll {
+    order: 3;
+    flex-basis: 100%;
+    /* Bleed to the screen edges so the strip visibly runs off both sides — the cue
+       that it scrolls — while the chips still start flush with the page gutter. */
+    margin: 0 -16px;
+    padding: 2px 16px;
+    scroll-padding-left: 16px;
+  }
+
+  /* A tap target that also has to be legible one-handed. */
+  .category-chip {
+    padding: 9px 15px;
+    font-size: 0.86rem;
   }
 }
 

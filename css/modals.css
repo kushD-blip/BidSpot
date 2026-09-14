@@ -129,12 +129,14 @@
 
 .bid-presets {
   display: flex;
+  flex-wrap: wrap; /* four "+₹50,000"-width chips don't fit one row on a phone */
   gap: 8px;
   margin-top: 6px;
 }
 
 .preset-chip {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 8px 12px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -152,6 +154,29 @@
   border-color: var(--accent-primary);
 }
 
+/* The "+91" prefix and the number share one row. .phone-input-wrapper had no rules
+   at all, and .phone-prefix picks up width:100% from the shared .form-input rule
+   above — so the prefix rendered as a full-width box stacked on top of the field. */
+.phone-input-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.phone-prefix {
+  width: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.phone-field {
+  flex: 1;
+  min-width: 0;
+}
+
 .payment-methods {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -159,10 +184,35 @@
   margin-top: 6px;
 }
 
+.analytics-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
 @media (max-width: 640px) {
-  .payment-methods {
+  .payment-methods,
+  .analytics-card-grid {
     grid-template-columns: 1fr;
   }
+
+  .checkout-item-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  /* Narrower gutters so the form fields get the width back; the card itself stays
+     a normal centred sheet (going full-bleed fought the overlay's own padding). */
+  .modal-overlay { padding: 14px; }
+
+  .checkout-left-panel,
+  .checkout-right-panel {
+    padding: 20px 16px;
+  }
+
+  .modal-body { padding: 20px 16px; }
+  .modal-header { padding: 16px 18px; }
+  .modal-title { font-size: 1.05rem; }
 }
 
 .payment-card {
@@ -447,12 +497,17 @@
   overflow-y: auto;
 }
 
+/* Both panels are grid items, which default to min-width:auto — so the panel sized
+   itself to its widest unshrinkable child (the four preset chips in a nowrap row)
+   rather than to its 1fr track. On a 375px phone that made a 317px modal lay out a
+   382px panel, pushing every field, label and button off the right edge. */
 .checkout-left-panel {
   background: var(--bg-secondary);
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-width: 0;
 }
 
 .checkout-right-panel {
@@ -461,6 +516,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-width: 0;
 }
 
 .panel-section-title {
@@ -475,6 +531,19 @@
   padding-bottom: 8px;
 }
 
+/* The "target rank + what you're buying" summary at the top of checkout step 1.
+   None of these had any rules, so the card was an unstyled block stack and the
+   rank badge — a plain <div> — stretched into a full-width maroon banner. */
+.checkout-item-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
 .item-badge {
   background: var(--accent-primary);
   color: #ffffff;
@@ -483,6 +552,27 @@
   font-size: 0.88rem;
   padding: 5px 12px;
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.item-details {
+  min-width: 0;
+}
+
+.item-title {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  overflow-wrap: anywhere; /* a pasted listing title can be one very long word */
+}
+
+.item-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .btn-checkout-submit {
@@ -617,4 +707,17 @@
   color: var(--text-secondary);
   cursor: not-allowed;
   opacity: 1; /* override the browser's default washed-out disabled rendering */
+}
+
+/* Mobile overrides for rules defined later in this file than the main 640px block
+   above — same specificity, so they only win from here. */
+@media (max-width: 640px) {
+  /* Overlaid inside the amount field this covered most of the input on a phone —
+     you couldn't read the number you were typing. Sits under the field instead. */
+  .bid-equivalent-badge {
+    position: static;
+    transform: none;
+    display: inline-block;
+    margin-top: 6px;
+  }
 }

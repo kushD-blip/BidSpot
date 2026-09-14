@@ -244,21 +244,59 @@
   border-color: var(--accent-primary);
 }
 
+/* Below desktop width the single nowrap line is too short to identify a listing by
+   ("Insight Drop – You're losing customer…"), so titles wrap to two lines instead.
+   Applies from tablet down, not just phones — a long name truncates at 768px too. */
+@media (max-width: 900px) {
+  .card-title {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+
+  .card-title-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
 @media (max-width: 640px) {
+  /* Phone layout, three stacked rows instead of one squeezed line:
+       row 1  [#rank] [logo] ............... FLOOR BID / ₹100
+       row 2  title, tagline and meta, across the full width
+       row 3  the bid button
+     Sharing one row with the rank badge, logo and price left the title block about
+     230px on a 375px screen, so every listing name was cut to "Insight…". */
   .leaderboard-card {
     flex-wrap: wrap;
     padding: 18px;
-    gap: 12px;
+    gap: 10px 12px;
+    /* The crown sits at top:-12px; row-gap alone doesn't reserve space for it. */
+    margin-top: 18px;
   }
 
+  .card-rank { order: 1; }
+  .card-logo { order: 2; }
+
   .card-price-section {
-    width: 100%;
-    align-items: flex-start;
-    flex-direction: row;
-    justify-content: space-between;
-    border-top: 1px solid var(--border-color);
-    padding-top: 12px;
-    margin-top: 4px;
+    order: 3;
+    margin-left: auto;
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .card-details {
+    order: 4;
+    flex-basis: 100%;
+  }
+
+  .card-meta {
+    gap: 8px 10px;
+    font-size: 0.75rem;
   }
 
   /* :hover doesn't fire reliably on touch — make the bid pill a normal static

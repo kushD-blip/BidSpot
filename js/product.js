@@ -9,7 +9,7 @@
    page just links there with ?outbid=<id>. */
 
 import { fetchListingById, fetchApprovedListings, trackClick } from './supabase-client.js';
-import { mapSupabaseListing, unescapeHtml } from './listing-mapper.js';
+import { mapSupabaseListing, unescapeHtml, formatClicks } from './listing-mapper.js';
 import { isSupabaseConfigured } from './config.js';
 import { renderLogo } from './get-logo.js';
 
@@ -85,7 +85,7 @@ async function render() {
   container.innerHTML = `
     <nav class="product-breadcrumb" aria-label="Breadcrumb">
       <a href="./index.html">Leaderboard</a>
-      <span aria-hidden="true">·</span>
+      <span class="meta-sep" aria-hidden="true">·</span>
       <a href="${categoryHref}">${item.category}</a>
     </nav>
 
@@ -102,12 +102,12 @@ async function render() {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path></svg>
             ${item.category}
           </a>
-          <span aria-hidden="true">·</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
           <a href="${item.url}" target="_blank" rel="noopener" class="meta-link js-outbound">${item.domain}</a>
-          <span aria-hidden="true">·</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
           <span>${item.timestamp}</span>
-          <span aria-hidden="true">·</span>
-          <span>${item.clicks.toLocaleString('en-IN')} clicks</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
+          <span>${formatClicks(item.clicks)}</span>
         </div>
         <p class="product-hero-tagline">${item.tagline || 'No description provided.'}</p>
         <div class="product-hero-actions">

@@ -107,39 +107,23 @@
     </div>
   </header>
 
-  <!-- Category Filter Bar & Always-Open Indicator -->
+  <!-- Category Filter Bar.
+       "All" and "Explore" are the two fixed chips (neither is a category, so neither
+       comes from the database); the categories themselves are rendered between them
+       from the categories table by ui.js. On desktop all three sit on one line. On
+       mobile the two fixed chips take their own line and the rolling strip gets the
+       full viewport width below them — squeezed between two fixed chips on a 375px
+       screen it had barely 100px to work with, so every category was clipped
+       mid-word and none of them was ever readable. -->
   <div class="category-wrapper">
-    <div class="category-header-row">
-      <div class="category-header-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
-        Select Category
-      </div>
-
-      <!-- Bidding has no session window: the board is open 24/7 and a paid bid
-           re-ranks instantly. This used to be a 9 AM - 3 PM "market session"
-           countdown, which only ever gated bidders by the clock for no reason. -->
-      <div class="trading-session-pill" title="Bidding is open 24/7 — a bid re-ranks the board the moment payment clears.">
-        <div class="pulse-dot"></div>
-        <span class="trading-timer-text">Open 24/7 · Bids rank instantly</span>
-      </div>
-    </div>
-
     <div class="category-bar" id="category-bar">
-      <!-- Pinned outside the rolling row — always visible, never scrolls away. -->
       <button class="category-chip pinned-chip active" data-category="All">
         <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
         <span>All</span>
       </button>
 
-      <!-- Chips are rendered from the categories table by ui.js (renderCategoryChips)
-           rather than hardcoded here: this list had already drifted out of sync with
-           the database once, leaving 9 categories with no way to reach them from the
-           home page. "All" above and "Explore" below are the only two fixed chips —
-           neither is a category, so neither comes from the database. -->
       <div class="category-scroll" id="category-scroll"></div>
 
-      <!-- Pinned to the far end, mirroring "All": a fixed, always-visible way out to
-           the full category grid, no matter where the rolling row has scrolled to. -->
       <a href="./categories.html" class="category-chip pinned-chip explore-chip">
         <span>Explore</span>
         <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -249,7 +233,9 @@
         <button class="close-btn close-modal-btn">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+        <!-- Class, not an inline grid: inline styles win over media queries, so a
+             hardcoded 2-column grid here could never collapse on a phone. -->
+        <div class="analytics-card-grid">
           <div class="analytics-card">
             <div class="analytics-val" id="analytics-online-val">30</div>
             <div class="analytics-lbl">Active Live Bidders</div>
@@ -450,7 +436,10 @@
               <div class="panel-section-title">
                 <span>Payment Method</span>
               </div>
-              <div class="payment-methods" style="grid-template-columns: repeat(2, 1fr);">
+              <!-- Columns come from .payment-methods in modals.css; an inline
+                   grid-template-columns here silently beat the mobile media query,
+                   so the two cards stayed side by side on a phone. -->
+              <div class="payment-methods">
                 <div class="payment-card selected" data-method="upi">
                   <svg class="payment-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
                   <div class="payment-details">
@@ -592,7 +581,10 @@
         <!-- Terms Checkbox Card -->
         <div class="terms-card-confirm">
           <div class="terms-checkbox-row">
-            <input type="checkbox" id="terms-checkbox-confirm" checked>
+            <!-- Deliberately NOT pre-checked: this is the bidder's agreement to the
+                 House Terms before real money moves, so it has to be an action they
+                 actually take. Pre-ticked, the gate below it could never fail. -->
+            <input type="checkbox" id="terms-checkbox-confirm">
             <label for="terms-checkbox-confirm" class="terms-label-text">
               I agree to the <a href="#" class="terms-link-inline" data-modal-target="modal-rules">House Terms &amp; Guidelines</a> of BidSpot.in
             </label>

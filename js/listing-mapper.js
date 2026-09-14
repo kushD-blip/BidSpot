@@ -49,6 +49,13 @@ export function unescapeHtml(str) {
     .replace(/&amp;/g, '&'); // last: otherwise "&amp;lt;" would decode twice
 }
 
+/** "1 click" / "2 clicks" — a real listing sitting at exactly one click was reading
+    as "1 clicks" on every card. */
+export function formatClicks(count) {
+  const n = Number(count || 0);
+  return `${n.toLocaleString('en-IN')} click${n === 1 ? '' : 's'}`;
+}
+
 export function timeAgo(isoString) {
   if (!isoString) return 'Just now';
   const diffMs = Date.now() - new Date(isoString).getTime();

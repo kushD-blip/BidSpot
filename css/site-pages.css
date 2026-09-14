@@ -117,6 +117,11 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Grid items default to min-width:auto, so this card sized itself to its widest
+     unbreakable descendant (the nowrap listing title inside .mini-rank-row) instead
+     of to its 1fr track — on a 375px screen that made a 319px track render a 497px
+     card, pushing every category card off the right edge of the phone. */
+  min-width: 0;
   transition: border-color var(--transition-normal), background-color var(--transition-normal), transform var(--transition-normal);
 }
 .category-overview-card:hover {
@@ -196,6 +201,9 @@
 
 .most-active-rank-badge {
   display: inline-block;
+  /* It's a flex item in a column card, so the default stretch made this short badge
+     span the card's full width and read as a banner rather than a tag. */
+  align-self: flex-start;
   color: var(--accent-primary);
   background: var(--badge-bg);
   border: 1px solid var(--accent-border);
@@ -212,6 +220,7 @@
   align-items: center;
   gap: 8px;
   font-size: 0.82rem;
+  min-width: 0; /* same reason as the card above — it's a flex item in a column */
 }
 
 .mini-rank-num {
@@ -528,6 +537,15 @@
   .product-hero-actions .btn-primary,
   .product-hero-actions .btn-secondary { flex: 1; justify-content: center; }
   .peer-rank-row { padding: 12px 16px; }
+
+  /* The meta row wraps onto 2-3 lines at this width, which left a "·" dangling at
+     the end of a line. Spacing alone separates the items once they're stacked. */
+  .meta-sep { display: none; }
+  .product-hero-meta { gap: 8px 14px; }
+
+  .product-about h2 { font-size: 1.2rem; }
+  .product-about h3 { font-size: 0.95rem; }
+  .product-claim-btn { width: 100%; justify-content: center; }
 }
 
 .empty-state-block {
@@ -540,4 +558,11 @@
   font-size: 1.2rem;
   color: var(--text-primary);
   margin-bottom: 6px;
+}
+/* "Back to the leaderboard" in these blocks is a real link but rendered as plain
+   body text, so it read as a dead end on the not-found page. */
+.empty-state-block a {
+  color: var(--accent-primary);
+  font-weight: 600;
+  text-decoration: underline;
 }

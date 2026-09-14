@@ -6,7 +6,7 @@ import { confettiEngine } from './confetti.js';
 import { renderLogo } from './get-logo.js';
 import { submitListing, trackClick } from './supabase-client.js';
 import { isSupabaseConfigured } from './config.js';
-import { escapeHtml, unescapeHtml, MIN_BID_INR } from './listing-mapper.js';
+import { escapeHtml, unescapeHtml, formatClicks, MIN_BID_INR } from './listing-mapper.js';
 
 /** Parses a fetch Response as JSON, but fails with a readable message instead of a
     raw "Unexpected token '<'..." SyntaxError if the server actually returned an
@@ -53,13 +53,13 @@ class UIManager {
     state.subscribe(() => this.render());
   }
 
-  // Slowly drifts the category chip row back and forth so every category (17 of
-  // them, only ~9 fit at once) surfaces on its own without the visitor having to
-  // discover it's horizontally scrollable. Pauses on hover/touch/focus so it never
+  // Slowly drifts the category chip row back and forth so every category (29 of
+  // them, only a handful fit at once) surfaces on its own without the visitor having
+  // to discover it's horizontally scrollable. Pauses on hover/touch/focus so it never
   // fights an actual click, and stays still entirely once everything already fits
-  // (maxScroll <= 0, e.g. on a wide desktop viewport).
+  // (maxScroll <= 0, e.g. on a very wide viewport).
   initCategoryAutoScroll() {
-    // "All" is pinned outside this — only the rest of the categories roll.
+    // "All" and "Explore" are pinned outside this — only the categories roll.
     const bar = document.getElementById('category-scroll');
     if (!bar) return;
 
@@ -682,7 +682,7 @@ class UIManager {
             </a>
             <span class="meta-item">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              ${item.clicks.toLocaleString()} clicks
+              ${formatClicks(item.clicks)}
             </span>
             <a href="./product.html?id=${item.id}" class="meta-details-btn" style="text-decoration: underline;" onclick="event.stopPropagation();">
               see details
