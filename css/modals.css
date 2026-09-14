@@ -154,28 +154,64 @@
   border-color: var(--accent-primary);
 }
 
-/* The "+91" prefix and the number share one row. .phone-input-wrapper had no rules
-   at all, and .phone-prefix picks up width:100% from the shared .form-input rule
-   above — so the prefix rendered as a full-width box stacked on top of the field. */
+/* Phone row: a country-code picker (flag + dial code) on the left, the local
+   number on the right. A single visual field split by a hairline so it reads as
+   one control rather than two neighbours — same idea as the URL/category bar in
+   the hero. .phone-input-wrapper had no rules at all before, and .phone-prefix
+   used to pick up width:100% from the shared .form-input rule, which is what
+   made the earlier "+91" render as a full-width stacked box. */
 .phone-input-wrapper {
   display: flex;
   align-items: stretch;
-  gap: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.phone-prefix {
-  width: auto;
+.phone-input-wrapper:focus-within {
+  border-color: var(--accent-primary);
+  background: var(--bg-card);
+}
+
+.phone-cc-select {
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  color: var(--text-secondary);
+  border: none;
+  border-right: 1px solid var(--border-color);
+  background: transparent;
+  padding: 10px 8px 10px 12px;
+  border-radius: 0;
+  /* Explicit emoji-first font stack: without it, Windows falls back to the base
+     sans and renders 🇮🇳 as the ISO letters "IN". The emoji fonts here cover
+     every platform (Segoe UI Emoji on Windows, Apple Color Emoji on macOS/iOS,
+     Noto Color Emoji on most Android/Linux). Body sans stays as the final
+     fallback for the dial code digits, which don't need emoji rendering. */
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", var(--font-sans);
+  font-size: 0.9rem;
   font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  /* Enough width for "+971" without collapsing the number field, but not so wide
+     that the native chevron pushes off the flag on Windows. */
+  width: 92px;
 }
 
 .phone-field {
   flex: 1;
   min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  outline: none;
 }
+/* The shared .form-input rule paints borders and backgrounds; we've moved that
+   look to the wrapper, so undo the doubled framing on the inner input. */
+.form-input.phone-field { border: none; background: transparent; }
+.form-input.phone-field:focus { background: transparent; }
 
 .payment-methods {
   display: grid;

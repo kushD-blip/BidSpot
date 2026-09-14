@@ -8,12 +8,28 @@ const MIN_BID_PAISE = 10000; // ₹100 minimum, matches schema.sql / README
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { listingId, bidderName, bidderEmail, amountRupees, currency = "INR" } = req.body || {};
+  const {
+    listingId,
+    bidderName,
+    bidderEmail,
+    bidderPhone,     // full E.164 (+91...) assembled client-side from the picker
+    bidderCountry,   // ISO code from the country dropdown, or '' for "Other"
+    amountRupees,
+    currency = "INR",
+  } = req.body || {};
 
   const amountPaise = Math.round(Number(amountRupees) * 100);
 
   if (!listingId || !amountPaise || amountPaise < MIN_BID_PAISE) {
     return res.status(400).json({ error: "Invalid bid amount (minimum ₹100)." });
+  }
+
+  // Server-side belt to the client-side braces: reject an obviously malformed phone
+  // instead of storing it. Razorpay's own popup will re-validate before charging,
+  // but we should not persist garbage to bids.bidder_phone either way.
+  const trimmedPhone = String(bidderPhone || "").trim();
+  if (trimmedPhone && !/^\+\d{7,15}$/.test(trimmedPhone)) {
+    return res.status(400).json({ error: "Invalid phone number." });
   }
 
   // Listing must exist and not be rejected/removed. A brand-new listing starts
@@ -40,11 +56,15 @@ export default async function handler(req, res) {
     });
 
     // Record a pending bid row now; it's marked 'paid' only after signature
-    // verification in api/verify-payment.js — never trusted before that.
+    // verification in api/verify-payment.js — never trusted before that. Phone and
+    // country are captured now (rather than only at verify time) so an abandoned
+    // checkout still leaves a follow-up-able record.
     const { error: insertErr } = await supabaseAdmin.from("bids").insert({
       listing_id: listingId,
       bidder_name: bidderName || null,
       bidder_email: bidderEmail || null,
+      bidder_phone: trimmedPhone || null,
+      bidder_country: bidderCountry || null,
       amount: amountPaise,
       currency,
       razorpay_order_id: order.id,

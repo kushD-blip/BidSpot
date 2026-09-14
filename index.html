@@ -409,28 +409,29 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Phone Number *</label>
+                  <label class="form-label" for="contact-phone">Phone Number *</label>
                   <div class="phone-input-wrapper">
-                    <span class="phone-prefix">+91</span>
-                    <input type="tel" id="contact-phone" class="form-input phone-field" required>
+                    <!-- Populated by ui.js:renderCountryCodePickers() from
+                         js/country-codes.js so this list and the billing-country
+                         list can never fall out of sync. Shows flag + dial code
+                         only so the trigger stays narrow; the full country name
+                         is inside each <option> for pickers that show it while
+                         open. -->
+                    <select id="contact-phone-cc" class="phone-cc-select" aria-label="Phone country code"></select>
+                    <input type="tel" id="contact-phone" class="form-input phone-field" inputmode="tel" required>
                   </div>
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Zip / Postal Code *</label>
-                  <input type="text" id="contact-zip" class="form-input" placeholder="380001" required>
+                  <label class="form-label" for="contact-zip">Zip / Postal Code *</label>
+                  <input type="text" id="contact-zip" class="form-input" required>
                 </div>
 
                 <div class="form-group full-width">
-                  <label class="form-label">Country *</label>
-                  <select id="contact-country" class="form-select">
-                    <option value="India" selected>India</option>
-                    <option value="United States">United States</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Singapore">Singapore</option>
-                    <option value="United Arab Emirates">United Arab Emirates</option>
-                    <option value="Other">Other Country</option>
-                  </select>
+                  <label class="form-label" for="contact-country">Country *</label>
+                  <!-- Also rendered by ui.js from the shared list, with a trailing
+                       "Other" option for anyone whose country isn't in the top ~40. -->
+                  <select id="contact-country" class="form-select"></select>
                 </div>
               </div>
             </div>

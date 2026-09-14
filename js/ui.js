@@ -7,6 +7,7 @@ import { renderLogo } from './get-logo.js';
 import { submitListing, trackClick } from './supabase-client.js';
 import { isSupabaseConfigured } from './config.js';
 import { escapeHtml, unescapeHtml, formatClicks, MIN_BID_INR } from './listing-mapper.js';
+import { COUNTRIES, OTHER_COUNTRY, findCountry, toE164 } from './country-codes.js';
 
 /** Parses a fetch Response as JSON, but fails with a readable message instead of a
     raw "Unexpected token '<'..." SyntaxError if the server actually returned an
@@ -53,8 +54,48 @@ class UIManager {
   init() {
     this.bindEvents();
     this.render();
+    this.renderCountryCodePickers();
     this.initCategoryAutoScroll();
     state.subscribe(() => this.render());
+  }
+
+  /** Fills both country pickers on the checkout form from the shared list in
+      country-codes.js. Runs once at startup — the list is static, and re-rendering
+      on every state change would blow away whatever the visitor had picked. */
+  renderCountryCodePickers() {
+    const phoneCC = document.getElementById('contact-phone-cc');
+    if (phoneCC && phoneCC.options.length === 0) {
+      // Trigger stays narrow: flag + dial code only ("🇮🇳 +91"). Full country name
+      // still appears in the dropdown while it's open, and screen readers hear it
+      // via aria-label on the trigger.
+      phoneCC.innerHTML = COUNTRIES.map((c) =>
+        `<option value="${c.iso}" data-dial="${c.dial}" title="${escapeHtml(c.name)}">${c.flag} ${c.dial}</option>`
+      ).join('');
+      phoneCC.value = 'IN';
+    }
+
+    const country = document.getElementById('contact-country');
+    if (country && country.options.length === 0) {
+      country.innerHTML = COUNTRIES.map((c) =>
+        `<option value="${c.iso}">${c.name}</option>`
+      ).join('') + `<option value="${OTHER_COUNTRY.iso}">${OTHER_COUNTRY.name}</option>`;
+      country.value = 'IN';
+    }
+
+    // Convenience: picking a country in the address dropdown updates the phone
+    // dial code to match, unless the visitor has already touched it themselves.
+    // A US-based bidder addressing a US billing address probably wants +1 by
+    // default, but a bidder in India with an out-of-country phone (or vice
+    // versa) shouldn't have their phone silently rewritten.
+    if (country && phoneCC && !country.dataset.bound) {
+      country.dataset.bound = 'true';
+      country.addEventListener('change', () => {
+        if (phoneCC.dataset.touched === 'true') return;
+        const match = findCountry(country.value);
+        if (match) phoneCC.value = match.iso;
+      });
+      phoneCC.addEventListener('change', () => { phoneCC.dataset.touched = 'true'; });
+    }
   }
 
   // Slowly drifts the category chip row back and forth so every category (29 of
@@ -963,6 +1004,9 @@ class UIManager {
     const amountInput = document.getElementById('bid-amount-input');
     const nameInput = document.getElementById('contact-name');
     const emailInput = document.getElementById('contact-email');
+    const phoneInput = document.getElementById('contact-phone');
+    const phoneCCSelect = document.getElementById('contact-phone-cc');
+    const countrySelect = document.getElementById('contact-country');
 
     const title = titleInput ? titleInput.value.trim() : '';
     let url = urlInput ? urlInput.value.trim() : '';
@@ -972,6 +1016,12 @@ class UIManager {
     const category = this.currentBidCategory();
     const bidderName = nameInput ? nameInput.value.trim() : '';
     const bidderEmail = emailInput ? emailInput.value.trim() : '';
+
+    // Assemble a single E.164 phone string from picker + input so what we store,
+    // send to Razorpay, and quote back to the bidder is one canonical value.
+    const phoneCC = phoneCCSelect ? findCountry(phoneCCSelect.value) : null;
+    const bidderPhone = toE164(phoneCC?.dial, phoneInput ? phoneInput.value : '');
+    const bidderCountry = countrySelect ? countrySelect.value : '';
 
     const inputVal = Number(amountInput ? amountInput.value : 0);
     const amountUSD = state.currency === 'INR' ? (inputVal / state.USD_TO_INR) : inputVal;
@@ -1008,6 +1058,15 @@ class UIManager {
 
     if (!bidderName || !bidderEmail) {
       this.showToast("Please add your name and email for the receipt.", "warning");
+      return;
+    }
+    // The picker guarantees the +CC part; the local number just needs digits.
+    // Rejected here so an obvious typo (empty or three-digit "number") never
+    // ships as junk metadata into the payment record.
+    const localDigits = (phoneInput?.value || '').replace(/\D+/g, '');
+    if (!bidderPhone || localDigits.length < 5) {
+      this.showToast("Please add a valid phone number.", "warning");
+      phoneInput?.focus();
       return;
     }
     if (!window.Razorpay) {
@@ -1051,7 +1110,10 @@ class UIManager {
       const orderRes = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listingId, bidderName, bidderEmail, amountRupees, currency: 'INR' }),
+        body: JSON.stringify({
+          listingId, bidderName, bidderEmail, bidderPhone, bidderCountry,
+          amountRupees, currency: 'INR',
+        }),
       });
       const order = await parseJsonResponse(orderRes);
       if (!orderRes.ok) throw new Error(order.error || "Could not start checkout.");
@@ -1063,7 +1125,13 @@ class UIManager {
         order_id: order.orderId,
         name: 'BidSpot.in',
         description: existing ? `Rank top-up — ${existing.title}` : `Rank bid — ${title}`,
-        prefill: { name: bidderName, email: bidderEmail },
+        prefill: {
+          name: bidderName,
+          email: bidderEmail,
+          // Razorpay expects the E.164 form here — the picker + toE164() already
+          // produce that, so the checkout popup opens with the number ready.
+          contact: bidderPhone,
+        },
         theme: { color: '#8B1E2E' },
         handler: async (response) => {
           try {

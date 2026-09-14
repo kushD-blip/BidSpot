@@ -145,6 +145,15 @@ create table if not exists public.bids (
 create index if not exists idx_bids_listing on public.bids(listing_id);
 create index if not exists idx_bids_status on public.bids(status);
 
+-- Bidder contact metadata captured at checkout. Nullable because the earliest
+-- bids on the site were placed before this column existed; new bids from
+-- create-order.js always set them. `bidder_phone` is E.164 (+CC + digits, 8-16
+-- chars); bidder_country is an ISO alpha-2 or '' (for "Other"). Stated as their
+-- own ALTERs so re-running this file on an existing database adds the columns
+-- (the CREATE TABLE above is `if not exists` and would skip them otherwise).
+alter table public.bids add column if not exists bidder_phone text;
+alter table public.bids add column if not exists bidder_country text;
+
 -- 4. Weekly winners (populated by cron every Monday 00:00 IST)
 create table if not exists public.weekly_winners (
   id uuid primary key default uuid_generate_v4(),
