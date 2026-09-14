@@ -254,7 +254,7 @@ button {
 .nav-link-text {
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-secondary);
   background: none;
   border: none;
@@ -400,12 +400,28 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  overflow-x: auto;
   padding: 2px 2px 10px;
-  scrollbar-width: none;
 }
 
-.category-bar::-webkit-scrollbar {
+.pinned-chip {
+  flex-shrink: 0;
+}
+
+/* Everything except "All" lives in here and scrolls/auto-rolls; min-width:0 is
+   required because this is a flex item next to .pinned-chip — without it, it
+   defaults to min-width:auto and grows to fit its own non-wrapping chips instead
+   of the space actually left over (same class of bug fixed on .category-wrapper). */
+.category-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.category-scroll::-webkit-scrollbar {
   display: none;
 }
 
@@ -414,7 +430,7 @@ button {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   font-size: 0.84rem;
@@ -423,6 +439,19 @@ button {
   white-space: nowrap;
   transition: all var(--transition-fast);
   cursor: pointer;
+}
+
+.category-chip.explore-chip {
+  background: var(--accent-light);
+  border-color: var(--accent-border);
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+.category-chip.explore-chip:hover {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-primary);
 }
 
 .chip-icon {
@@ -486,7 +515,7 @@ button {
 .time-toggle-container {
   display: flex;
   justify-content: center;
-  margin: 28px 0 16px;
+  margin: 16px 0 12px;
 }
 
 .time-toggle-pill {
@@ -518,7 +547,7 @@ button {
 /* Hero Section — Auction Catalog Headline */
 .hero-section {
   text-align: center;
-  padding: 24px 28px 16px;
+  padding: 12px 28px 12px;
   max-width: 900px;
   margin: 0 auto;
 }
@@ -538,6 +567,15 @@ button {
   padding: 4px 14px;
   border-radius: var(--radius-full);
   margin-bottom: 16px;
+}
+
+.hero-rank-num {
+  transition: color var(--transition-fast);
+  cursor: default;
+}
+
+.hero-rank-num:hover {
+  color: var(--accent-primary);
 }
 
 .hero-headline {

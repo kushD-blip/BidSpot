@@ -47,7 +47,8 @@ class UIManager {
   // fights an actual click, and stays still entirely once everything already fits
   // (maxScroll <= 0, e.g. on a wide desktop viewport).
   initCategoryAutoScroll() {
-    const bar = document.getElementById('category-bar');
+    // "All" is pinned outside this — only the rest of the categories roll.
+    const bar = document.getElementById('category-scroll');
     if (!bar) return;
 
     let direction = 1;
@@ -117,9 +118,11 @@ class UIManager {
       if (container) {
         container.addEventListener('click', (e) => {
           const chip = e.target.closest('.category-chip, .chip');
-          if (chip) {
-            const cat = chip.dataset.category;
-            state.setCategory(cat);
+          // The "Explore" chip is a real link to categories.html, not a filter —
+          // it has no data-category, so let its own navigation happen instead of
+          // setting the filter to undefined.
+          if (chip && chip.dataset.category) {
+            state.setCategory(chip.dataset.category);
           }
         });
       }
@@ -487,12 +490,7 @@ class UIManager {
 
     const headlineLabel = document.getElementById('hero-headline-label');
     if (headlineLabel) {
-      headlineLabel.textContent = `Claim Spot #${projectedRank} Floor:`;
-    }
-
-    const rankBadgeEl = document.getElementById('hero-projected-rank-badge');
-    if (rankBadgeEl) {
-      rankBadgeEl.textContent = `Position #${projectedRank}`;
+      headlineLabel.innerHTML = `Claim Spot <span class="hero-rank-num">#${projectedRank}</span> Floor:`;
     }
   }
 

@@ -123,12 +123,13 @@
     </div>
 
     <div class="category-bar" id="category-bar">
-      <!-- 1. All Categories -->
-      <button class="category-chip active" data-category="All">
+      <!-- Pinned outside the rolling row — always visible, never scrolls away. -->
+      <button class="category-chip pinned-chip active" data-category="All">
         <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        <span>All Categories</span>
+        <span>All</span>
       </button>
 
+      <div class="category-scroll" id="category-scroll">
       <!-- 2. Productivity -->
       <button class="category-chip" data-category="Productivity">
         <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -219,6 +220,15 @@
         <span class="chip-icon-emoji">🤝</span>
         <span>Agencies &amp; Services</span>
       </button>
+
+      <!-- Distinct, accent-colored entry point to the full category grid — this
+           chip bar can only ever show so much at once (17 categories), so there's
+           always an explicit escape hatch to see everything at a glance. -->
+      <a href="./categories.html" class="category-chip explore-chip">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        <span>Explore</span>
+      </a>
+      </div>
     </div>
   </div>
 
@@ -239,13 +249,12 @@
   <!-- Hero Section with Dynamic Rank Position Headline -->
   <section class="hero-section">
     <h1 class="hero-headline">
-      <span id="hero-headline-label">Claim Spot #1 Floor:</span>
+      <span id="hero-headline-label">Claim Spot <span class="hero-rank-num">#1</span> Floor:</span>
       <div class="hero-price-controls">
         <button class="adjust-btn" id="hero-dec-btn" title="Decrease Floor Bid" aria-label="Decrease Floor Bid">-</button>
         <span class="hero-price" id="hero-price-display">₹14,45,510</span>
         <button class="adjust-btn" id="hero-inc-btn" title="Increase Floor Bid" aria-label="Increase Floor Bid">+</button>
       </div>
-      <span id="hero-projected-rank-badge" class="hero-rank-target-pill">Position #1</span>
     </h1>
 
     <form class="claim-bar-form" id="hero-claim-form">
@@ -277,10 +286,6 @@
       </button>
     </form>
   </section>
-
-  <div style="max-width: 1240px; margin: 0 auto; padding: 0 28px;">
-    <h2 style="font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Leaderboard</h2>
-  </div>
 
   <!-- Main Content Area: Leaderboard Companies + Sidebar with Top 5 Traders Today -->
   <main class="main-content">
