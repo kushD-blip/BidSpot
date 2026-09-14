@@ -1,0 +1,15 @@
+{
+  "name": "bidspot-in",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BidSpot.in — minimalist viral live bidding leaderboard",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "dev:full": "node --env-file=.env dev-server.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "razorpay": "^2.9.4"
+  }
+}

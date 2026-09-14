@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B1E2E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 13 5 5'/%3E%3Cpath d='m3 21 3-3'/%3E%3Cpath d='m9 15 2 2'/%3E%3Cpath d='m11 9 5 5'/%3E%3Cpath d='m13 3 6 6-6 6-6-6 6-6Z'/%3E%3C/svg%3E">
+  <title>Today's Rankings — BidSpot.in</title>
+  <meta name="description" content="Today's live bidding leaderboard on BidSpot.in — resets daily at midnight IST.">
+  <link rel="canonical" href="https://bidspot.in/today.html">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/leaderboard.css">
+  <link rel="stylesheet" href="./css/rank-effects.css">
+  <link rel="stylesheet" href="./css/site-pages.css">
+  <script>
+    try {
+      var t = localStorage.getItem('bidspot_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="./index.html" class="brand-logo">
+        <svg class="brand-logo-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+        <span>BidSpot<span style="color: var(--accent-primary);">.in</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="./today.html" class="nav-link-text active">Daily</a></li>
+        <li><a href="./categories.html" class="nav-link-text">Categories</a></li>
+        <li><a href="./about.html" class="nav-link-text">About</a></li>
+        <li><a href="./rules.html" class="nav-link-text">Rules</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="nav-text-btn nav-icon-btn">
+          <svg id="theme-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <span id="theme-text-span">Dark</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <h1>Today's Rankings</h1>
+    <p>Ranked by bids placed in the current 24-hour cycle — resets daily at midnight IST.</p>
+  </section>
+
+  <main class="page-content" style="max-width: 780px;">
+    <div class="leaderboard-container" id="today-list">
+      <!-- Rendered via js/today.js -->
+    </div>
+
+    <div class="section-heading-row" style="margin-top: 40px;">
+      <h2>Today at a glance</h2>
+      <a href="./analytics.html" class="see-all-link">Full analytics →</a>
+    </div>
+    <div id="stat-cards" class="stat-cards-row">
+      <!-- Rendered via js/today.js -->
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="site-footer-links">
+        <a href="./about.html">About</a>
+        <a href="./rules.html">Rules</a>
+        <a href="./terms.html">Terms</a>
+        <a href="./privacy.html">Privacy</a>
+        <a href="./refund.html">Refund Policy</a>
+        <a href="mailto:kushprackp@gmail.com">Contact</a>
+      </div>
+      <span class="site-footer-copy">&copy; 2026 BidSpot.in</span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('bidspot_theme', next); } catch (e) {}
+      const span = document.getElementById('theme-text-span');
+      if (span) span.textContent = isDark ? 'Dark' : 'Light';
+    });
+  </script>
+  <script type="module" src="./js/today.js"></script>
+</body>
+</html>

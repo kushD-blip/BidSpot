@@ -1,0 +1,285 @@
+/* BidSpot — The Bidding House for Website Traffic */
+/* Auction Lot Card Styling & Leaderboard Layout */
+/* Relies on css/variables.css being linked before this file in <head>. */
+
+/* .main-content grid layout lives in css/main.css — was duplicated here with
+   slightly different values, which is exactly the kind of split that makes a
+   bug like the mobile overflow (fixed below) hard to track down. */
+
+.leaderboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0; /* grid items default to min-width:auto — without this, the 1fr
+                   track grows to fit unshrinkable descendants instead of the
+                   viewport, which was the actual cause of the mobile overflow */
+}
+
+/* Auction Lot Card (Thin Hairline Border 1px, Generous Padding, Zero Drop Shadows) */
+.leaderboard-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  padding: 24px 28px;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  transition: border-color var(--transition-normal), background-color var(--transition-normal);
+  position: relative;
+  overflow: visible;
+  margin-top: 10px;
+}
+
+.leaderboard-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-primary);
+  box-shadow: none;
+}
+
+/* Hover "Place Bid" Pill Button Centered at Top */
+.hover-claim-pill {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 6px) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  background: var(--accent-primary);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.leaderboard-card:hover .hover-claim-pill {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.hover-claim-pill:hover {
+  background: var(--accent-primary-hover);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.hover-claim-pill .gavel-icon-svg {
+  stroke: #ffffff;
+  flex-shrink: 0;
+}
+
+/* Lot Badges (Serif LOT #1 Header) */
+.card-rank {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--badge-bg);
+  border: 1px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* Unified Lot Badges & Rank Card Component (#1..#N) */
+
+/* Logo / Letter Avatar */
+.card-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* Card Content Details */
+.card-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  min-width: 0; /* flex items default to min-width:auto — without this, a nowrap
+                   child below forces this row (and the whole card) to overflow */
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.card-tagline {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.category-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.meta-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.meta-link:hover {
+  color: var(--accent-primary);
+}
+
+.meta-details-btn {
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.meta-details-btn:hover {
+  color: var(--accent-primary);
+}
+
+/* Price Display Section in Playfair Display Serif */
+.card-price-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.card-price-label {
+  font-family: var(--font-serif);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.card-price {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+  letter-spacing: -0.02em;
+}
+
+.btn-outbid-small {
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
+  font-weight: 600;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.btn-outbid-small:hover {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-primary);
+}
+
+@media (max-width: 640px) {
+  .leaderboard-card {
+    flex-wrap: wrap;
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .card-price-section {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  /* :hover doesn't fire reliably on touch — make the bid pill a normal static
+     button under the card content instead of a hidden-until-hover overlay. */
+  .hover-claim-pill {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    width: 100%;
+    justify-content: center;
+    order: 10;
+    margin-top: 4px;
+  }
+
+  .leaderboard-card:hover .hover-claim-pill {
+    transform: none;
+  }
+}
+
+/* Any touch-primary device (tablets included, regardless of width) gets the same
+   always-visible bid button — :hover is unreliable on touch at any screen size. */
+@media (hover: none) {
+  .hover-claim-pill {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    width: 100%;
+    justify-content: center;
+    order: 10;
+    margin-top: 12px;
+  }
+}

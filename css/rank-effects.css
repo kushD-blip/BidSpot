@@ -1,0 +1,79 @@
+/* BidSpot — Rank Tier Highlighting & Motion */
+/* Targets the real leaderboard markup (.leaderboard-card.rank-N from js/ui.js) and the
+   gold/silver/bronze tokens already defined in variables.css but previously unused. */
+
+/* Relies on css/variables.css being linked before this file in <head>. */
+
+/* Rank #1 — strongest treatment: glow, breathing pulse, crown badge */
+.leaderboard-card.rank-1 {
+  background: var(--gold-bg);
+  border: 1.5px solid var(--gold-border);
+  box-shadow: 0 0 0 1px var(--gold-glow);
+  animation: pulseGold 3.5s ease-in-out infinite;
+}
+
+.leaderboard-card.rank-1::after {
+  content: "👑";
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.leaderboard-card.rank-1 .card-rank,
+.leaderboard-card.rank-1 .card-price {
+  color: var(--gold-text);
+}
+
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 1px var(--gold-glow); }
+  50%      { box-shadow: 0 0 0 2px var(--gold-glow); }
+}
+
+/* Rank #2 — silver, elevated but no pulse */
+.leaderboard-card.rank-2 {
+  background: var(--silver-bg);
+  border: 1.5px solid var(--silver-border);
+}
+.leaderboard-card.rank-2 .card-rank {
+  color: var(--silver-text);
+}
+
+/* Rank #3 — bronze, lightest special treatment */
+.leaderboard-card.rank-3 {
+  background: var(--bronze-bg);
+  border: 1.5px solid var(--bronze-border);
+}
+.leaderboard-card.rank-3 .card-rank {
+  color: var(--bronze-text);
+}
+
+/* Rank change motion — toggle .rank-up / .rank-down briefly (add class, remove after
+   ~500ms) when a listing's position shifts on a realtime update. */
+@keyframes rankSlideUp {
+  from { transform: translateY(24px); opacity: 0.4; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes rankSlideDown {
+  from { transform: translateY(-24px); opacity: 0.4; }
+  to   { transform: translateY(0);      opacity: 1; }
+}
+.rank-up   { animation: rankSlideUp 0.5s ease-out; }
+.rank-down { animation: rankSlideDown 0.5s ease-out; }
+
+/* Activity ticker entrance */
+@keyframes tickerIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.activity-item { animation: tickerIn 0.4s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-card.rank-1,
+  .rank-up,
+  .rank-down,
+  .activity-item {
+    animation: none;
+  }
+}

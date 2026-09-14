@@ -1,0 +1,4 @@
+docs/
+.claude/
+.env.example
+schema.sql

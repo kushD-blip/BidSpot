@@ -1,0 +1,135 @@
+/* BidSpot — The Bidding House for Website Traffic */
+/* Design Tokens & Palette System (Warm Ivory / Warm Charcoal / Auction Maroon) */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* LIGHT MODE: Warm Ivory / Parchment Palette (#FAF6EF) */
+  --bg-primary: #FAF6EF;
+  --bg-secondary: #F3ECE0;
+  --bg-card: #FAF6EF;
+  --bg-card-hover: #F6F0E6;
+  --bg-card-border: #E6DFC6;
+  --bg-glass: rgba(250, 246, 239, 0.92);
+
+  --text-primary: #1A1A1A;
+  --text-secondary: #5C564E;
+  --text-muted: #8C8478;
+  --text-inverse: #FAF6EF;
+
+  /* Accent: Deep Auction-Hammer Maroon (#8B1E2E) - WCAG AA 6.8:1 Contrast */
+  --accent-primary: #8B1E2E;
+  --accent-primary-hover: #721825;
+  --accent-light: rgba(139, 30, 46, 0.08);
+  --accent-border: rgba(139, 30, 46, 0.28);
+  --accent-glow: rgba(139, 30, 46, 0.15);
+
+  --badge-bg: rgba(139, 30, 46, 0.08);
+  --badge-text: #8B1E2E;
+
+  /* "Live/active" state (the Active Bidders pill's hover, its pulse dot on hover) —
+     deliberately green rather than the maroon accent, so "people are active right
+     now" reads as its own distinct signal instead of just another accent hover. */
+  --success-color: #1B7A3D;
+  --success-glow: rgba(27, 122, 61, 0.35);
+
+  /* Lot #1 Winner Gold Crown & Floor Styling (Warm Neutral Palette) */
+  --gold-bg: rgba(139, 30, 46, 0.04);
+  --gold-border: #8B1E2E;
+  --gold-text: #8B1E2E;
+  --gold-glow: rgba(139, 30, 46, 0.10);
+
+  --silver-bg: rgba(26, 26, 26, 0.02);
+  --silver-border: #E6DFC6;
+  --silver-text: #5C564E;
+
+  --bronze-bg: rgba(26, 26, 26, 0.02);
+  --bronze-border: #E6DFC6;
+  --bronze-text: #5C564E;
+
+  --border-color: #E6DFC6;
+  --border-subtle: #EFE9D7;
+  --border-card: #E6DFC6;
+
+  /* Elevation: Hairline 1px borders instead of drop shadows */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-accent: none;
+  --shadow-glow: none;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Typography — one clean grotesk everywhere, no editorial serif.
+     --font-serif kept as an alias (rather than renaming every var(--font-serif) call
+     site-wide) so headings/prices render in the same minimal sans as body text. */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: var(--font-sans);
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] {
+  /* DARK MODE: Warm Charcoal Palette (#141210 - Near Black Warm Neutral) */
+  --bg-primary: #141210;
+  --bg-secondary: #1C1916;
+  --bg-card: #1A1714;
+  --bg-card-hover: #221F1B;
+  --bg-card-border: #2E2924;
+  --bg-glass: rgba(20, 18, 16, 0.92);
+
+  --text-primary: #EFE9DD;
+  --text-secondary: #AAA296;
+  --text-muted: #7A7266;
+  --text-inverse: #141210;
+
+  /* Accent: Brightened Auction Maroon (#B23A4A) - WCAG AA 4.8:1 Contrast */
+  --accent-primary: #B23A4A;
+  --accent-primary-hover: #C54455;
+  --accent-light: rgba(178, 58, 74, 0.14);
+  --accent-border: rgba(178, 58, 74, 0.35);
+  --accent-glow: rgba(178, 58, 74, 0.20);
+
+  --badge-bg: rgba(178, 58, 74, 0.16);
+  --badge-text: #B23A4A;
+
+  --success-color: #3FB86E;
+  --success-glow: rgba(63, 184, 110, 0.35);
+
+  --gold-bg: rgba(178, 58, 74, 0.08);
+  --gold-border: #B23A4A;
+  --gold-text: #B23A4A;
+  --gold-glow: rgba(178, 58, 74, 0.18);
+
+  --silver-bg: rgba(239, 233, 221, 0.02);
+  --silver-border: #2E2924;
+  --silver-text: #AAA296;
+
+  --bronze-bg: rgba(239, 233, 221, 0.02);
+  --bronze-border: #2E2924;
+  --bronze-text: #AAA296;
+
+  --border-color: #2E2924;
+  --border-subtle: #24201C;
+  --border-card: #2E2924;
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-accent: none;
+  --shadow-glow: none;
+}
+
+/* Monospace numerals and pulse animation for final minute auction closing */
+@keyframes finalMinutePulse {
+  0%, 100% { opacity: 1; color: var(--accent-primary); }
+  50% { opacity: 0.6; color: var(--accent-primary-hover); }
+}
+
+.closing-final-minute {
+  animation: finalMinutePulse 1.2s infinite ease-in-out;
+}

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B1E2E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 13 5 5'/%3E%3Cpath d='m3 21 3-3'/%3E%3Cpath d='m9 15 2 2'/%3E%3Cpath d='m11 9 5 5'/%3E%3Cpath d='m13 3 6 6-6 6-6-6 6-6Z'/%3E%3C/svg%3E">
+  <title>BidSpot — The Bidding House for Website Traffic</title>
+  <meta name="description" content="BidSpot is the auction house for digital attention and website traffic. Bid for top floor spots, outbid competitors, and win high-intent visitor traffic.">
+  <meta name="keywords" content="BidSpot, auction house, bidding house, website traffic auction, attention auction, indie hackers, startup promotion, UPI bidding">
+  <link rel="canonical" href="https://bidspot.in">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bidspot.in">
+  <meta property="og:title" content="BidSpot — The Bidding House for Website Traffic">
+  <meta property="og:description" content="The premier auction house for digital attention. Bid for floor spots and win top website visibility.">
+  <meta property="og:image" content="https://bidspot.in/og-card.png">
+  <meta property="og:site_name" content="BidSpot.in">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://bidspot.in">
+  <meta name="twitter:title" content="BidSpot — The Bidding House for Website Traffic">
+  <meta name="twitter:description" content="The premier auction house for digital attention. Bid for floor spots and win top website visibility.">
+  <meta name="twitter:image" content="https://bidspot.in/og-card.png">
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/leaderboard.css">
+  <link rel="stylesheet" href="./css/rank-effects.css">
+  <link rel="stylesheet" href="./css/modals.css">
+  <link rel="stylesheet" href="./css/pages.css">
+  <link rel="stylesheet" href="./css/site-pages.css">
+</head>
+<body>
+
+  <!-- Ambient Warm Background Mesh -->
+  <div class="bg-mesh-container" aria-hidden="true">
+    <div class="mesh-ball mesh-ball-1"></div>
+    <div class="mesh-ball mesh-ball-2"></div>
+    <div class="mesh-ball mesh-ball-3"></div>
+  </div>
+
+  <!-- Header Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <!-- BidSpot Logo -->
+      <a href="#" class="brand-logo">
+        <svg class="brand-logo-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+        <span>BidSpot</span>
+      </a>
+
+      <!-- Live Status Pill -> Analytics page -->
+      <div class="nav-center">
+        <a class="stats-pill" id="header-stats-pill" href="./analytics.html" title="View Analytics">
+          <div class="pulse-dot"></div>
+          <span id="header-stats-text"><strong>30 Active Bidders</strong> · ₹1.18 Cr Volume · Analytics</span>
+        </a>
+      </div>
+
+      <!-- Navigation Links -> Dedicated Pages -->
+      <ul class="nav-links">
+        <li>
+          <a class="nav-link-text active" id="nav-btn-daily" href="./today.html">Daily</a>
+        </li>
+        <li>
+          <a class="nav-link-text" id="nav-btn-categories" href="./categories.html">Categories</a>
+        </li>
+        <li>
+          <a class="nav-link-text" id="nav-btn-about" href="./about.html">About</a>
+        </li>
+        <li>
+          <a class="nav-link-text" id="nav-btn-rules" href="./rules.html">Rules</a>
+        </li>
+      </ul>
+
+      <!-- Action Buttons with Vector SVG Icons -->
+      <div class="nav-actions">
+        <!-- Search Trigger with Vector Icon -->
+        <div class="header-search-container">
+          <button id="search-toggle-btn" class="nav-text-btn nav-icon-btn nav-icon-btn-only" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span class="sr-only">Search</span>
+          </button>
+          <div class="header-search-dropdown" id="header-search-dropdown" style="display: none;">
+            <input type="text" id="header-search-input" placeholder="Search companies or categories..." class="form-input">
+            <button type="button" id="close-search-btn" class="close-btn">&times;</button>
+          </div>
+        </div>
+
+        <!-- Dark / Light Theme Toggle with Vector Icon -->
+        <button id="theme-toggle" class="nav-text-btn nav-icon-btn nav-icon-btn-only" aria-label="Toggle dark mode">
+          <svg id="theme-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span id="theme-text-span" class="sr-only">Dark</span>
+        </button>
+
+        <!-- Currency Selector (INR / USD) -->
+        <div class="currency-toggle">
+          <button id="curr-inr" class="currency-option active">INR</button>
+          <button id="curr-usd" class="currency-option">USD</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Category Filter Bar & Trading Session Hover Pill -->
+  <div class="category-wrapper">
+    <div class="category-header-row">
+      <div class="category-header-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+        Select Category
+      </div>
+
+      <!-- Sleek Trading Session Hover Indicator (9 AM - 3 PM) -->
+      <div class="trading-session-pill" id="trading-session-pill" title="Trading Market Hours (9:00 AM – 3:00 PM IST). Bids update live during active market session.">
+        <div class="pulse-dot"></div>
+        <span id="sidebar-timer-label" style="display:none;">Stock Market Session</span>
+        <span id="sidebar-closing-timer" class="trading-timer-text">Trading Session 9 AM - 3 PM · Live Session</span>
+      </div>
+    </div>
+
+    <div class="category-bar" id="category-bar">
+      <!-- 1. All Categories -->
+      <button class="category-chip active" data-category="All">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>All Categories</span>
+      </button>
+
+      <!-- 2. Productivity -->
+      <button class="category-chip" data-category="Productivity">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span>Productivity</span>
+      </button>
+
+      <!-- 3. Ecommerce -->
+      <button class="category-chip" data-category="Ecommerce">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span>Ecommerce</span>
+      </button>
+
+      <!-- 4. Fintech -->
+      <button class="category-chip" data-category="Fintech">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        <span>Fintech</span>
+      </button>
+
+      <!-- 5. Developer -->
+      <button class="category-chip" data-category="Developer">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        <span>Developer</span>
+      </button>
+
+      <!-- 6. AI Tools -->
+      <button class="category-chip" data-category="AI Tools">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8.01" y2="16"></line><line x1="16" y1="16" x2="16.01" y2="16"></line></svg>
+        <span>AI Tools</span>
+      </button>
+
+      <!-- 7. SaaS -->
+      <button class="category-chip" data-category="SaaS">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        <span>SaaS</span>
+      </button>
+
+      <!-- 8. Crypto -->
+      <button class="category-chip" data-category="Crypto">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.5 9h5a1.5 1.5 0 0 1 0 3h-5m0 0h5.5a1.5 1.5 0 0 1 0 3h-5.5M12 7.5v9"></path></svg>
+        <span>Crypto</span>
+      </button>
+
+      <!-- 9. Marketing -->
+      <button class="category-chip" data-category="Marketing">
+        <svg class="chip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 13v-2z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path></svg>
+        <span>Marketing</span>
+      </button>
+
+      <!-- 10-18: the categories added after this chip bar was first built —
+           schema.sql has 17 total, this only ever had 9, so 9 of them were
+           unreachable from the home page's own filter bar. Uses the same emoji
+           as categories.html's cards (schema.sql's `icon` column) rather than
+           new hand-drawn line icons, to actually ship this rather than block on
+           matching art style — worth revisiting for full visual consistency. -->
+      <button class="category-chip" data-category="SEO & Visibility">
+        <span class="chip-icon-emoji">🔍</span>
+        <span>SEO &amp; Visibility</span>
+      </button>
+      <button class="category-chip" data-category="Design & Creative">
+        <span class="chip-icon-emoji">🎨</span>
+        <span>Design &amp; Creative</span>
+      </button>
+      <button class="category-chip" data-category="Business & Finance">
+        <span class="chip-icon-emoji">⚖️</span>
+        <span>Business &amp; Finance</span>
+      </button>
+      <button class="category-chip" data-category="Security & Privacy">
+        <span class="chip-icon-emoji">🛡️</span>
+        <span>Security &amp; Privacy</span>
+      </button>
+      <button class="category-chip" data-category="Health & Wellness">
+        <span class="chip-icon-emoji">❤️</span>
+        <span>Health &amp; Wellness</span>
+      </button>
+      <button class="category-chip" data-category="Social & Creator Tools">
+        <span class="chip-icon-emoji">📱</span>
+        <span>Social &amp; Creator Tools</span>
+      </button>
+      <button class="category-chip" data-category="Hiring & Careers">
+        <span class="chip-icon-emoji">📋</span>
+        <span>Hiring &amp; Careers</span>
+      </button>
+      <button class="category-chip" data-category="Education & Learning">
+        <span class="chip-icon-emoji">🎓</span>
+        <span>Education &amp; Learning</span>
+      </button>
+      <button class="category-chip" data-category="Agencies & Services">
+        <span class="chip-icon-emoji">🤝</span>
+        <span>Agencies &amp; Services</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Time Toggle (All Leaderboard Spots vs Today's Bids) -->
+  <div class="time-toggle-container">
+    <div class="time-toggle-pill" id="time-toggle-pill">
+      <button class="time-option active" data-time="all-time">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"></path><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+        <span>All Rankings</span>
+      </button>
+      <button class="time-option" data-time="today">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>Today's Active Bids</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hero Section with Dynamic Rank Position Headline -->
+  <section class="hero-section">
+    <h1 class="hero-headline">
+      <span id="hero-headline-label">Claim Spot #1 Floor:</span>
+      <div class="hero-price-controls">
+        <button class="adjust-btn" id="hero-dec-btn" title="Decrease Floor Bid" aria-label="Decrease Floor Bid">-</button>
+        <span class="hero-price" id="hero-price-display">₹14,45,510</span>
+        <button class="adjust-btn" id="hero-inc-btn" title="Increase Floor Bid" aria-label="Increase Floor Bid">+</button>
+      </div>
+      <span id="hero-projected-rank-badge" class="hero-rank-target-pill">Position #1</span>
+    </h1>
+
+    <form class="claim-bar-form" id="hero-claim-form">
+      <svg class="input-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      <input type="text" id="claim-url-input" class="claim-input" placeholder="Your product URL or @handle (e.g. postman.com or @my_startup)" required>
+      <select id="claim-category-select" class="claim-select">
+        <option value="" disabled selected>Select Category</option>
+        <option value="Productivity">Productivity</option>
+        <option value="Ecommerce">Ecommerce</option>
+        <option value="Fintech">Fintech</option>
+        <option value="Developer">Developer</option>
+        <option value="AI Tools">AI Tools</option>
+        <option value="SaaS">SaaS</option>
+        <option value="Crypto">Crypto</option>
+        <option value="Marketing">Marketing</option>
+        <option value="SEO & Visibility">SEO & Visibility</option>
+        <option value="Design & Creative">Design & Creative</option>
+        <option value="Business & Finance">Business & Finance</option>
+        <option value="Security & Privacy">Security & Privacy</option>
+        <option value="Health & Wellness">Health & Wellness</option>
+        <option value="Social & Creator Tools">Social & Creator Tools</option>
+        <option value="Hiring & Careers">Hiring & Careers</option>
+        <option value="Education & Learning">Education & Learning</option>
+        <option value="Agencies & Services">Agencies & Services</option>
+      </select>
+      <button type="submit" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+        <span>Place Bid</span>
+      </button>
+    </form>
+  </section>
+
+  <div style="max-width: 1240px; margin: 0 auto; padding: 0 28px;">
+    <h2 style="font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Leaderboard</h2>
+  </div>
+
+  <!-- Main Content Area: Leaderboard Companies + Sidebar with Top 5 Traders Today -->
+  <main class="main-content">
+
+    <!-- Main Leaderboard Companies Column -->
+    <section class="leaderboard-container" id="leaderboard-list">
+      <!-- Dynamic Leaderboard Cards Rendered via JS -->
+    </section>
+
+    <!-- Sidebar Column: Today's Top 5 Traders -->
+    <aside class="sidebar">
+      <div class="sidebar-box">
+        <div class="sidebar-title-row">
+          <h2 class="sidebar-title">
+            <span class="pulse-dot" style="position: static; display: inline-block;"></span>
+            Today's ranking
+          </h2>
+          <a href="./today.html" class="see-all-link">See all →</a>
+        </div>
+
+        <div class="top-traders-list" id="top-traders-list">
+          <!-- Dynamically rendered top 5 traders via JS -->
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- DEDICATED MODAL / VIEW 1: Daily Highlights Page -->
+  <div class="modal-overlay" id="modal-daily">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Today's Daily Spotlight Bids
+        </h2>
+        <button class="close-btn close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-secondary);">
+          Daily spotlight showcases top companies bidded during the active 9:00 AM – 3:00 PM stock market session.
+        </p>
+        <div id="daily-spotlight-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEDICATED MODAL / VIEW 2: Categories Explorer Page -->
+  <div class="modal-overlay" id="modal-categories">
+    <div class="modal-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+          Category Explorer
+        </h2>
+        <button class="close-btn close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 10px;">
+          Explore floor bid activity across all bidded categories on BidSpot.in:
+        </p>
+        <div class="modal-categories-grid">
+          <button class="modal-cat-box" data-category="Productivity">
+            <strong style="color: var(--accent-primary);">Productivity</strong>
+            <span>142 Active Bids</span>
+          </button>
+          <button class="modal-cat-box" data-category="Ecommerce">
+            <strong style="color: var(--accent-primary);">Ecommerce</strong>
+            <span>98 Active Bids</span>
+          </button>
+          <button class="modal-cat-box" data-category="Fintech">
+            <strong style="color: var(--accent-primary);">Fintech</strong>
+            <span>76 Active Bids</span>
+          </button>
+          <button class="modal-cat-box" data-category="Developer">
+            <strong style="color: var(--accent-primary);">Developer</strong>
+            <span>64 Active Bids</span>
+          </button>
+          <button class="modal-cat-box" data-category="AI Tools">
+            <strong style="color: var(--accent-primary);">AI Tools</strong>
+            <span>52 Active Bids</span>
+          </button>
+          <button class="modal-cat-box" data-category="SaaS">
+            <strong style="color: var(--accent-primary);">SaaS</strong>
+            <span>48 Active Bids</span>
+          </button>
+          <button class="modal-cat-box" data-category="Crypto">
+            <strong style="color: var(--accent-primary);">Crypto</strong>
+            <span>34 Active Bids</span>
+          </button>
+          <button class="modal-cat-box" data-category="Marketing">
+            <strong style="color: var(--accent-primary);">Marketing</strong>
+            <span>29 Active Bids</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEDICATED MODAL / VIEW 3: Dedicated Analytics Page (Triggered via Live Status pill) -->
+  <div class="modal-overlay" id="modal-stats">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          Dedicated Auction Analytics Dashboard
+        </h2>
+        <button class="close-btn close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+          <div class="analytics-card">
+            <div class="analytics-val" id="analytics-online-val">30</div>
+            <div class="analytics-lbl">Active Live Bidders</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-val" id="analytics-revenue-val">₹1.18 Cr</div>
+            <div class="analytics-lbl">Total Volume Transacted</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-val" id="analytics-visitors-val">1,545,599</div>
+            <div class="analytics-lbl">Total Visitor Impressions</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-val" id="analytics-products-val">2,881</div>
+            <div class="analytics-lbl">Verified Projects Listed</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <h4 style="font-family: var(--font-serif); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">
+            Market Bidding Hours: 9:00 AM – 3:00 PM
+          </h4>
+          <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5;">
+            BidSpot operates on high-intent trading sessions aligned with financial market windows. Spot positions shift instantly as competitors place higher floor bids.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Step 2 Split Checkout Modal -->
+  <div class="modal-overlay" id="modal-bid">
+    <div class="modal-card split-checkout-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h2 class="modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            Step 2: Checkout &amp; Settlement
+          </h2>
+          <span class="step-badge">Step 2 of 2</span>
+        </div>
+        <button class="close-btn close-modal-btn">&times;</button>
+      </div>
+      <div class="split-modal-body">
+        
+        <!-- LEFT PANEL: Order Summary & Price Breakup -->
+        <div class="checkout-left-panel">
+          <div class="panel-section-title">
+            <span>Spot Summary</span>
+            <span class="fx-badge">1 USD = ₹85.00 INR</span>
+          </div>
+
+          <!-- Item Name & Target Rank Card -->
+          <div class="checkout-item-card">
+            <div class="item-badge" id="checkout-item-rank-badge">#1</div>
+            <div class="item-details">
+              <h4 class="item-title" id="checkout-item-name">BidSpot Rank #1 Spot</h4>
+              <p class="item-sub" id="checkout-item-sub">Guaranteed placement on leaderboard catalog</p>
+            </div>
+          </div>
+
+          <!-- Product Details Form Fields -->
+          <div class="form-group">
+            <label class="form-label">Listing Title *</label>
+            <input type="text" id="bid-title-input" class="form-input" placeholder="e.g. Postman API Platform" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Target URL or Handle *</label>
+            <input type="url" id="bid-url-input" class="form-input" placeholder="https://yourwebsite.com" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Short Tagline</label>
+            <input type="text" id="bid-tagline-input" class="form-input" placeholder="1-line explanation of what your product does">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="bid-category-select" class="form-select">
+              <option value="" disabled selected>Select Category</option>
+              <option value="Productivity">Productivity</option>
+              <option value="Ecommerce">Ecommerce</option>
+              <option value="Fintech">Fintech</option>
+              <option value="Developer">Developer</option>
+              <option value="AI Tools">AI Tools</option>
+              <option value="SaaS">SaaS</option>
+              <option value="Crypto">Crypto</option>
+              <option value="Marketing">Marketing</option>
+              <option value="SEO & Visibility">SEO & Visibility</option>
+              <option value="Design & Creative">Design & Creative</option>
+              <option value="Business & Finance">Business & Finance</option>
+              <option value="Security & Privacy">Security & Privacy</option>
+              <option value="Health & Wellness">Health & Wellness</option>
+              <option value="Social & Creator Tools">Social & Creator Tools</option>
+              <option value="Hiring & Careers">Hiring & Careers</option>
+              <option value="Education & Learning">Education & Learning</option>
+              <option value="Agencies & Services">Agencies & Services</option>
+            </select>
+          </div>
+
+          <!-- Bid Amount Input -->
+          <div class="form-group">
+            <label class="form-label" id="bid-amount-label">Base Bid Amount (₹ INR) *</label>
+            <div style="position: relative;">
+              <input type="number" id="bid-amount-input" class="form-input" min="1" step="1" required>
+              <span id="bid-equivalent-badge" class="bid-equivalent-badge">≈ $17,006 (estimate, billed in INR)</span>
+            </div>
+            <div id="bid-amount-error" class="field-error" style="display: none; color: var(--accent-primary); font-size: 0.8rem; margin-top: 4px;"></div>
+            <div class="bid-presets" id="bid-presets-container">
+              <button type="button" class="preset-chip" data-add-inr="1000">+ ₹1,000</button>
+              <button type="button" class="preset-chip" data-add-inr="5000">+ ₹5,000</button>
+              <button type="button" class="preset-chip" data-add-inr="10000">+ ₹10,000</button>
+              <button type="button" class="preset-chip" data-add-inr="50000">+ ₹50,000</button>
+            </div>
+          </div>
+
+          <!-- Dual Currency Price Breakup Card -->
+          <div class="price-breakup-card" id="price-breakup-card">
+            <div class="breakup-header">
+              <span>Settlement Breakup</span>
+              <span id="breakup-projected-rank" class="rank-highlight-badge">#1</span>
+            </div>
+
+            <div class="breakup-row">
+              <span>Spot Listing</span>
+              <span id="breakup-item-display" style="font-weight: 600; color: var(--text-primary);">BidSpot Rank #1 Spot</span>
+            </div>
+
+            <div class="breakup-row">
+              <span>Subtotal</span>
+              <div class="dual-currency-val">
+                <strong id="breakup-subtotal-inr" style="color: var(--text-primary);">₹14,45,510.00</strong>
+                <span id="breakup-subtotal-usd" class="inr-subtext">≈ $17,006.00 (estimate)</span>
+              </div>
+            </div>
+
+            <div class="breakup-row total">
+              <span>Total Payable</span>
+              <div class="dual-currency-val text-right">
+                <span id="breakup-total-inr" class="total-price-tag">₹14,45,510.00 INR</span>
+                <span id="breakup-total-usd" class="total-inr-tag">≈ $17,006.00 USD</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT PANEL: Contact Information & Payment Options -->
+        <div class="checkout-right-panel">
+          <form id="submit-bid-form" style="display: flex; flex-direction: column; gap: 14px;">
+            
+            <div class="contact-info-section">
+              <div class="panel-section-title">
+                <span>Bidder Information</span>
+              </div>
+              <div class="contact-grid" style="margin-top: 8px;">
+                <div class="form-group full-width">
+                  <label class="form-label">Full Name *</label>
+                  <input type="text" id="contact-name" class="form-input" placeholder="e.g. Kushal Raval" required>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Email Address *</label>
+                  <input type="email" id="contact-email" class="form-input" placeholder="name@domain.com" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Phone Number *</label>
+                  <div class="phone-input-wrapper">
+                    <span class="phone-prefix">+91</span>
+                    <input type="tel" id="contact-phone" class="form-input phone-field" placeholder="98765 43210" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Zip / Postal Code *</label>
+                  <input type="text" id="contact-zip" class="form-input" placeholder="380001" required>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Country *</label>
+                  <select id="contact-country" class="form-select">
+                    <option value="India" selected>India</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="United Arab Emirates">United Arab Emirates</option>
+                    <option value="Other">Other Country</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Options Section -->
+            <div class="payment-options-section">
+              <div class="panel-section-title">
+                <span>Payment Method</span>
+              </div>
+              <div class="payment-methods" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="payment-card selected" data-method="upi">
+                  <svg class="payment-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                  <div class="payment-details">
+                    <span class="payment-name">UPI Instant</span>
+                    <span class="payment-sub">Scan QR / VPA</span>
+                  </div>
+                </div>
+                <div class="payment-card" data-method="razorpay">
+                  <svg class="payment-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                  <div class="payment-details">
+                    <span class="payment-name">Razorpay Gateway</span>
+                    <span class="payment-sub">NetBanking, Cards &amp; UPI</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- UPI QR Code Box -->
+            <div class="upi-qr-box" id="upi-qr-box">
+              <div class="upi-qr-header">
+                <div style="font-family: var(--font-serif); font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">Scan UPI QR Code</div>
+                <div id="upi-qr-amount-text" style="font-family: var(--font-serif); font-weight: 700; font-size: 0.85rem; color: var(--accent-primary);">Amount: ₹14,45,510.00</div>
+              </div>
+              <div class="qr-img-wrapper">
+                <img id="upi-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=bidspot@upi&pn=BidSpotIndia" alt="UPI QR Code" class="qr-code-img">
+              </div>
+              <div class="vpa-copy-row">
+                <span class="vpa-text">UPI ID: <strong>bidspot@upi</strong></span>
+                <button type="button" id="copy-upi-btn" class="btn-copy-vpa">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy VPA</span>
+                </button>
+              </div>
+              <div style="font-size: 0.76rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
+                Works with all UPI apps.
+              </div>
+            </div>
+
+            <!-- Razorpay Box -->
+            <div class="razorpay-box" id="razorpay-box" style="display: none;">
+              <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                You'll choose your card, netbanking bank, or wallet securely on the next screen, powered by Razorpay.
+              </div>
+            </div>
+
+            <button type="submit" id="submit-bid-btn" class="btn-primary btn-checkout-submit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+              <span>Confirm &amp; Place Bid</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: House Rules & About -->
+  <div class="modal-overlay" id="modal-about">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+          About BidSpot Auction House
+        </h2>
+        <button class="close-btn close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+        <p><strong>The Bidding House for Website Traffic</strong><br>
+        BidSpot.in is the premier auction house for website visibility and digital attention. Built to deliver direct high-intent traffic without complex ad networks or opaque algorithms, BidSpot lets creators, founders, and startups bid for top floor visibility spots in real-time.</p>
+        
+        <p style="margin-top: 10px;"><strong>How the Auction Operates:</strong><br>
+        1. Bidders place floor bids starting at $1+ (₹100).<br>
+        2. The highest bid claims <strong>Rank #1</strong> (Top Floor visibility).<br>
+        3. Runner-up bids claim Rank #2, Rank #3, and sequential floor spots.<br>
+        4. Outbids update floor placements live across all connected catalog views!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: House Guidelines & Rules -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          House Guidelines
+        </h2>
+        <button class="close-btn close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+        <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 10px;">
+          <li><strong>Transparent Rankings:</strong> Spots are strictly ordered by total floor bid amount in descending order.</li>
+          <li><strong>Stock Market Session (9 AM - 3 PM):</strong> Bidding operates during live market trading hours (9:00 AM – 3:00 PM), opening fresh opportunities daily for new launches.</li>
+          <li><strong>Real-time Outbidding:</strong> Competitors can place higher floor bids at any time. When outbid, rank positions shift instantly.</li>
+          <li><strong>Settlement:</strong> All bids are final upon payment confirmation.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 7: Step 1 Confirm Floor Bid -->
+  <div class="modal-overlay" id="modal-confirm-rank">
+    <div class="modal-card confirm-rank-card">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+          Confirm Rank Floor Bid
+        </h2>
+        <button class="close-btn close-modal-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.86rem; color: var(--text-secondary);">
+          Review the target rank position and floor bid, then agree to the House Terms to proceed.
+        </p>
+
+        <!-- Target Rank & Price Card -->
+        <div class="rank-price-confirm-box">
+          <div class="confirm-left-col">
+            <span class="confirm-box-label">RANK</span>
+            <h3 id="confirm-rank-badge" class="confirm-box-rank">#1</h3>
+            <span id="confirm-target-sub" class="confirm-box-sub">Analytics</span>
+          </div>
+          <div class="confirm-right-col">
+            <span class="confirm-box-label">FLOOR BID</span>
+            <div id="confirm-price-display" class="confirm-box-price">$17,006</div>
+            <span class="confirm-box-sub">Due now</span>
+          </div>
+        </div>
+
+        <p class="confirm-disclaimer-text">
+          A placement at that rank position on the public leaderboard. Goes live upon payment confirmation.
+        </p>
+
+        <!-- Terms Checkbox Card -->
+        <div class="terms-card-confirm">
+          <div class="terms-checkbox-row">
+            <input type="checkbox" id="terms-checkbox-confirm" checked>
+            <label for="terms-checkbox-confirm" class="terms-label-text">
+              I agree to the <a href="#" class="terms-link-inline" data-modal-target="modal-rules">House Terms &amp; Guidelines</a> of BidSpot.in
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Footer Buttons -->
+        <div class="confirm-actions-row">
+          <button type="button" class="btn-cancel-confirm close-modal-btn">Cancel</button>
+          <button type="button" id="continue-to-checkout-btn" class="btn-confirm-submit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+            <span>Proceed to Settlement</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main JavaScript Bundle -->
+  <!-- Footer: legal links required before Razorpay live activation -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="site-footer-links">
+        <a href="./about.html">About</a>
+        <a href="./rules.html">Rules</a>
+        <a href="./terms.html">Terms</a>
+        <a href="./privacy.html">Privacy</a>
+        <a href="./refund.html">Refund Policy</a>
+        <a href="mailto:kushprackp@gmail.com">Contact</a>
+      </div>
+      <span class="site-footer-copy">&copy; 2026 BidSpot.in</span>
+    </div>
+  </footer>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
