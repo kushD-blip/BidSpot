@@ -215,64 +215,42 @@
   .modal-title { font-size: 1.05rem; }
 }
 
-.payment-card {
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 12px;
+/* Single-route Razorpay payment: an informational card telling the bidder what to
+   expect. The old .payment-card picker, .upi-qr-box and .qr-code-img rules were
+   removed when the flow simplified — see the note in js/ui.js:constructor(). */
+.payment-info-card {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
-}
-
-.payment-card:hover {
-  border-color: var(--accent-border);
-}
-
-.payment-card.selected {
-  border-color: var(--accent-primary);
-  background: var(--accent-light);
-  color: var(--text-primary);
-}
-
-
-.payment-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.payment-name {
-  font-weight: 700;
-  font-size: 0.86rem;
-  color: var(--text-primary);
-}
-
-.payment-sub {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-}
-
-.upi-qr-box {
-  background: var(--bg-card);
-  padding: 18px;
-  border-radius: var(--radius-md);
-  text-align: center;
-  border: 1px solid var(--border-color);
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-top: 6px;
 }
 
-.qr-code-img {
-  width: 140px;
-  height: 140px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
+.payment-info-card svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.payment-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.payment-info-text strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.payment-info-text span {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
 .confirm-rank-card {
@@ -457,29 +435,7 @@
   font-size: 1.15rem;
 }
 
-.vpa-copy-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: var(--bg-secondary);
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  font-size: 0.82rem;
-  color: var(--text-primary);
-}
-
-.btn-copy-vpa {
-  background: var(--accent-primary);
-  color: #ffffff;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.76rem;
-  font-weight: 600;
-  cursor: pointer;
-}
+/* .vpa-copy-row and .btn-copy-vpa lived here for the removed UPI-QR block. */
 
 .modal-card.split-checkout-card {
   max-width: 560px;

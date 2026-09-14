@@ -4,24 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B1E2E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 13 5 5'/%3E%3Cpath d='m3 21 3-3'/%3E%3Cpath d='m9 15 2 2'/%3E%3Cpath d='m11 9 5 5'/%3E%3Cpath d='m13 3 6 6-6 6-6-6 6-6Z'/%3E%3C/svg%3E">
-  <title>BidSpot — The Bidding House for Website Traffic</title>
-  <meta name="description" content="BidSpot is the auction house for digital attention and website traffic. Bid for top floor spots, outbid competitors, and win high-intent visitor traffic.">
-  <meta name="keywords" content="BidSpot, auction house, bidding house, website traffic auction, attention auction, indie hackers, startup promotion, UPI bidding">
+  <!-- Titles and descriptions are rewritten around what founders actually search
+       for ("pay for website traffic", "startup leaderboard", "buy ranking spot")
+       rather than the internal "auction house" language nobody types. The
+       <meta name="keywords"> tag is deliberately not present: Google ignored it
+       in 2009 and a stuffed keywords tag can look spammy to smaller crawlers. -->
+  <title>BidSpot — Pay to Rank Your Website | Live Bidding Leaderboard India</title>
+  <meta name="description" content="Bid real money to claim a ranked spot on BidSpot's public leaderboard. Higher bid = higher rank = more visibility for your startup, product or handle. Starts at ₹100.">
   <link rel="canonical" href="https://bidspot.in">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://bidspot.in">
-  <meta property="og:title" content="BidSpot — The Bidding House for Website Traffic">
-  <meta property="og:description" content="The premier auction house for digital attention. Bid for floor spots and win top website visibility.">
+  <meta property="og:title" content="BidSpot — Pay to Rank Your Website">
+  <meta property="og:description" content="Live bidding leaderboard for startups and creators. Bid to claim your spot, get outbid, or top up to climb.">
   <meta property="og:image" content="https://bidspot.in/og-card.png">
   <meta property="og:site_name" content="BidSpot.in">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://bidspot.in">
-  <meta name="twitter:title" content="BidSpot — The Bidding House for Website Traffic">
-  <meta name="twitter:description" content="The premier auction house for digital attention. Bid for floor spots and win top website visibility.">
+  <meta name="twitter:title" content="BidSpot — Pay to Rank Your Website">
+  <meta name="twitter:description" content="Live bidding leaderboard for startups and creators. Bid to claim your spot, get outbid, or top up to climb.">
   <meta name="twitter:image" content="https://bidspot.in/og-card.png">
 
   <!-- CSS Stylesheets -->
@@ -49,7 +53,7 @@
       <!-- BidSpot Logo -->
       <a href="#" class="brand-logo">
         <svg class="brand-logo-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
-        <span>BidSpot</span>
+        <span>Bid<span class="brand-logo-accent">Spot</span></span>
       </a>
 
       <!-- Live Status Pill -> Analytics page -->
@@ -408,7 +412,7 @@
                   <label class="form-label">Phone Number *</label>
                   <div class="phone-input-wrapper">
                     <span class="phone-prefix">+91</span>
-                    <input type="tel" id="contact-phone" class="form-input phone-field" placeholder="98765 43210" required>
+                    <input type="tel" id="contact-phone" class="form-input phone-field" required>
                   </div>
                 </div>
 
@@ -431,57 +435,21 @@
               </div>
             </div>
 
-            <!-- Payment Options Section -->
+            <!-- Payment: single route through Razorpay Checkout. The card/netbanking/
+                 wallet picker lives inside Razorpay's own popup — we deliberately do
+                 NOT collect card details here, which is the only way to stay PCI-safe
+                 without SAQ D scope. The picker UI and the standalone UPI-QR block
+                 that used to live here were removed once the flow became single-route. -->
             <div class="payment-options-section">
               <div class="panel-section-title">
-                <span>Payment Method</span>
+                <span>Payment</span>
               </div>
-              <!-- Columns come from .payment-methods in modals.css; an inline
-                   grid-template-columns here silently beat the mobile media query,
-                   so the two cards stayed side by side on a phone. -->
-              <div class="payment-methods">
-                <div class="payment-card selected" data-method="upi">
-                  <svg class="payment-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                  <div class="payment-details">
-                    <span class="payment-name">UPI Instant</span>
-                    <span class="payment-sub">Scan QR / VPA</span>
-                  </div>
+              <div class="payment-info-card">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                <div class="payment-info-text">
+                  <strong>Secure checkout by Razorpay</strong>
+                  <span>Enter your card, UPI or netbanking details on Razorpay's own screen. We never see or store payment credentials.</span>
                 </div>
-                <div class="payment-card" data-method="razorpay">
-                  <svg class="payment-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                  <div class="payment-details">
-                    <span class="payment-name">Razorpay Gateway</span>
-                    <span class="payment-sub">NetBanking, Cards &amp; UPI</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- UPI QR Code Box -->
-            <div class="upi-qr-box" id="upi-qr-box">
-              <div class="upi-qr-header">
-                <div style="font-family: var(--font-serif); font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">Scan UPI QR Code</div>
-                <div id="upi-qr-amount-text" style="font-family: var(--font-serif); font-weight: 700; font-size: 0.85rem; color: var(--accent-primary);">Amount: ₹14,45,510.00</div>
-              </div>
-              <div class="qr-img-wrapper">
-                <img id="upi-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=bidspot@upi&pn=BidSpotIndia" alt="UPI QR Code" class="qr-code-img">
-              </div>
-              <div class="vpa-copy-row">
-                <span class="vpa-text">UPI ID: <strong>bidspot@upi</strong></span>
-                <button type="button" id="copy-upi-btn" class="btn-copy-vpa">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  <span>Copy VPA</span>
-                </button>
-              </div>
-              <div style="font-size: 0.76rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
-                Works with all UPI apps.
-              </div>
-            </div>
-
-            <!-- Razorpay Box -->
-            <div class="razorpay-box" id="razorpay-box" style="display: none;">
-              <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
-                You'll choose your card, netbanking bank, or wallet securely on the next screen, powered by Razorpay.
               </div>
             </div>
 

@@ -173,6 +173,14 @@ button {
   opacity: 0.9;
 }
 
+/* Two-tone wordmark: "Bid" in the base ink, "Spot" in the accent. Same idea as
+   the reference where "BID" was called out in a different color, adapted to our
+   own palette rather than switching the theme. Applied by wrapping the second
+   half in <span class="brand-logo-accent"> in the markup. */
+.brand-logo-accent {
+  color: var(--accent-primary);
+}
+
 .brand-logo-svg {
   flex-shrink: 0;
   stroke: var(--accent-primary);
@@ -258,9 +266,39 @@ button {
   color: var(--text-secondary);
   background: none;
   border: none;
-  padding: 6px 10px;
+  padding: 6px 2px;
+  margin: 0 8px;
   cursor: pointer;
+  position: relative;
   transition: color var(--transition-fast);
+}
+
+/* Underline that grows out from the middle to sit under the active tab and to
+   preview under a hover. Same maroon as the rest of the accent palette (kept in
+   the site's theme rather than the reference's orange), animated width/opacity so
+   the current tab reads instantly and hover confirms which one you'd land on. */
+.nav-link-text::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: width var(--transition-normal), opacity var(--transition-fast);
+}
+
+.nav-link-text:hover::after {
+  width: 60%;
+  opacity: 0.6;
+}
+
+.nav-link-text.active::after {
+  width: 100%;
+  opacity: 1;
 }
 
 .nav-link-text:hover, .nav-link-text.active {

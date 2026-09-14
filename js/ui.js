@@ -29,7 +29,11 @@ class UIManager {
     // until they do, updateHeroPriceDisplay() keeps this pinned to "cost to beat
     // the current #1", so it doesn't stay frozen at ₹100 once real bids exist.
     this.bidAmountManuallySet = false;
-    this.selectedPaymentMethod = 'upi';
+    // Single payment route through Razorpay Checkout — bidders pick card, UPI or
+    // netbanking inside Razorpay's own popup. We deliberately don't collect card
+    // details on our own screen (that would put us in PCI SAQ D scope), and the
+    // in-house UPI QR was removed because a static VPA can't tie a payment to a
+    // specific bid and the raw QR flow was giving people cold feet on a real bid.
     this.pendingConfirmData = null;
     // Which category the current selectedBidAmountUSD was priced against, so
     // updateHeroPriceDisplay() can re-anchor the suggestion when it changes.
@@ -353,39 +357,6 @@ class UIManager {
       });
     }
 
-    // Payment Method Selector
-    document.querySelectorAll('.payment-card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        this.selectedPaymentMethod = card.dataset.method;
-        this.togglePaymentMethodBoxes();
-        this.renderModalPriceBreakup();
-      });
-    });
-
-    // Copy VPA Button
-    const copyUpiBtn = document.getElementById('copy-upi-btn');
-    if (copyUpiBtn) {
-      copyUpiBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText('bidspot@upi').then(() => {
-          copyUpiBtn.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Copied!</span>
-          `;
-          setTimeout(() => {
-            copyUpiBtn.innerHTML = `
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              <span>Copy VPA</span>
-            `;
-          }, 2000);
-          this.showToast("UPI ID (bidspot@upi) copied to clipboard!", "copy");
-        }).catch(() => {
-          this.showToast("UPI ID: bidspot@upi", "info");
-        });
-      });
-    }
-
     // Step 2 Bid Form Submission
     const submitBidForm = document.getElementById('submit-bid-form');
     if (submitBidForm) {
@@ -396,13 +367,8 @@ class UIManager {
     }
   }
 
-  togglePaymentMethodBoxes() {
-    const upiBox = document.getElementById('upi-qr-box');
-    const rzpBox = document.getElementById('razorpay-box');
-
-    if (upiBox) upiBox.style.display = this.selectedPaymentMethod === 'upi' ? 'flex' : 'none';
-    if (rzpBox) rzpBox.style.display = this.selectedPaymentMethod === 'razorpay' ? 'block' : 'none';
-  }
+  // togglePaymentMethodBoxes() and its UPI/Razorpay box switching are gone; a single
+  // Razorpay Checkout is the only route and there is nothing to toggle any more.
 
   render() {
     // Each section renders independently — one throwing (e.g. on an unexpected
@@ -903,25 +869,13 @@ class UIManager {
       rankBadgeEl.textContent = `#${projectedRank}`;
     }
 
-    const upiAmountText = document.getElementById('upi-qr-amount-text');
-    if (upiAmountText) {
-      upiAmountText.textContent = `Amount: ${state.formatINRExact(totalINR)}`;
-    }
-
-    const upiQrImg = document.getElementById('upi-qr-img');
-    if (upiQrImg) {
-      const upiData = `upi://pay?pa=bidspot@upi&pn=BidSpotIndia&am=${totalINR.toFixed(2)}&cu=INR&tn=BidSpot%20Rank%20%23${projectedRank}`;
-      upiQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(upiData)}`;
-    }
+    // The in-house UPI QR and its price sync are gone (see the note in
+    // constructor()); Razorpay's popup handles UPI and everything else.
 
     const submitBtn = document.getElementById('submit-bid-btn');
     if (submitBtn) {
       const iconSVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>`;
-      if (this.selectedPaymentMethod === 'upi') {
-        submitBtn.innerHTML = `${iconSVG} <span>Confirm &amp; Place Bid (${state.formatINRExact(totalINR)}) via UPI</span>`;
-      } else {
-        submitBtn.innerHTML = `${iconSVG} <span>Confirm &amp; Place Bid (${state.formatINRExact(totalINR)}) via Razorpay</span>`;
-      }
+      submitBtn.innerHTML = `${iconSVG} <span>Pay ${state.formatINRExact(totalINR)} securely</span>`;
       submitBtn.disabled = isBelowMinBid;
       submitBtn.style.opacity = isBelowMinBid ? '0.5' : '';
     }
