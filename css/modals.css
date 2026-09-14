@@ -432,7 +432,7 @@
 }
 
 .modal-card.split-checkout-card {
-  max-width: 960px;
+  max-width: 560px;
   width: 95%;
   max-height: 92vh;
   border-radius: var(--radius-lg);
@@ -440,22 +440,15 @@
 
 .split-modal-body {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 1fr;
   gap: 0;
   padding: 0;
   max-height: calc(92vh - 74px);
   overflow-y: auto;
 }
 
-@media (max-width: 880px) {
-  .split-modal-body {
-    grid-template-columns: 1fr;
-  }
-}
-
 .checkout-left-panel {
   background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
@@ -501,6 +494,14 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+}
+
+/* Step 2's submit sits next to the Back button instead of alone, so it needs to
+   share the row (flex:1.5, like .btn-confirm-submit) instead of width:100%. */
+.btn-checkout-submit.in-row {
+  width: auto;
+  flex: 1.5;
+  margin-top: 0;
 }
 
 /* Dedicated Analytics Dashboard Modal Styling */

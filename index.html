@@ -436,16 +436,16 @@
         <div class="modal-title-group">
           <h2 class="modal-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-            Step 2: Checkout &amp; Settlement
+            <span id="checkout-step-title">Checkout &amp; Settlement</span>
           </h2>
-          <span class="step-badge">Step 2 of 2</span>
+          <span class="step-badge" id="checkout-step-badge">Step 1 of 2</span>
         </div>
         <button class="close-btn close-modal-btn">&times;</button>
       </div>
       <div class="split-modal-body">
-        
-        <!-- LEFT PANEL: Order Summary & Price Breakup -->
-        <div class="checkout-left-panel">
+
+        <!-- STEP 1: Listing details + price -->
+        <div class="checkout-left-panel" id="checkout-step-1">
           <div class="panel-section-title">
             <span>Spot Summary</span>
             <span class="fx-badge">1 USD = ₹85.00 INR</span>
@@ -545,10 +545,14 @@
             </div>
           </div>
 
+          <button type="button" id="checkout-next-btn" class="btn-primary btn-checkout-submit">
+            <span>Next: Your Details</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
         </div>
 
-        <!-- RIGHT PANEL: Contact Information & Payment Options -->
-        <div class="checkout-right-panel">
+        <!-- STEP 2: Bidder info + payment -->
+        <div class="checkout-right-panel" id="checkout-step-2" style="display: none;">
           <form id="submit-bid-form" style="display: flex; flex-direction: column; gap: 14px;">
             
             <div class="contact-info-section">
@@ -644,10 +648,16 @@
               </div>
             </div>
 
-            <button type="submit" id="submit-bid-btn" class="btn-primary btn-checkout-submit">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
-              <span>Confirm &amp; Place Bid</span>
-            </button>
+            <div class="confirm-actions-row">
+              <button type="button" id="checkout-back-btn" class="btn-cancel-confirm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>Back</span>
+              </button>
+              <button type="submit" id="submit-bid-btn" class="btn-primary btn-checkout-submit in-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+                <span>Confirm &amp; Place Bid</span>
+              </button>
+            </div>
           </form>
         </div>
       </div>

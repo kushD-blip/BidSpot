@@ -263,6 +263,16 @@ class UIManager {
       });
     }
 
+    // Checkout modal's own internal Step 1 (listing + price) -> Step 2 (bidder info)
+    const checkoutNextBtn = document.getElementById('checkout-next-btn');
+    if (checkoutNextBtn) {
+      checkoutNextBtn.addEventListener('click', () => this.goToCheckoutStep2());
+    }
+    const checkoutBackBtn = document.getElementById('checkout-back-btn');
+    if (checkoutBackBtn) {
+      checkoutBackBtn.addEventListener('click', () => this.showCheckoutStep(1));
+    }
+
     // Step 2 Form Amount Listener
     const amountInput = document.getElementById('bid-amount-input');
     if (amountInput) {
@@ -770,7 +780,38 @@ class UIManager {
     }
 
     this.renderModalPriceBreakup();
+    this.showCheckoutStep(1);
     this.openModal('modal-bid');
+  }
+
+  // Step 1: listing details + price. Step 2: bidder info + payment. Kept as two
+  // plain divs toggled by display rather than separate modals — handleBidSubmission
+  // already reads every field by id regardless of which step it's currently in.
+  showCheckoutStep(step) {
+    const step1 = document.getElementById('checkout-step-1');
+    const step2 = document.getElementById('checkout-step-2');
+    const badge = document.getElementById('checkout-step-badge');
+    const title = document.getElementById('checkout-step-title');
+    if (step1) step1.style.display = step === 1 ? 'flex' : 'none';
+    if (step2) step2.style.display = step === 2 ? 'flex' : 'none';
+    if (badge) badge.textContent = `Step ${step} of 2`;
+    if (title) title.textContent = step === 1 ? 'Your Listing' : 'Your Details & Payment';
+  }
+
+  goToCheckoutStep2() {
+    const title = document.getElementById('bid-title-input');
+    const url = document.getElementById('bid-url-input');
+    const amountInput = document.getElementById('bid-amount-input');
+
+    if (!title || !title.value.trim() || !url || !url.value.trim()) {
+      this.showToast("Add a title and URL before continuing.", "warning");
+      return;
+    }
+    if (amountInput && amountInput.classList.contains('input-error')) {
+      this.showToast(`Minimum bid is ₹${MIN_BID_INR}.`, "warning");
+      return;
+    }
+    this.showCheckoutStep(2);
   }
 
   async handleBidSubmission() {
