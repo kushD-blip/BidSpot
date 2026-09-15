@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="./css/modals.css">
   <link rel="stylesheet" href="./css/pages.css">
   <link rel="stylesheet" href="./css/site-pages.css">
+  <link rel="stylesheet" href="./css/home-sections.css">
   <link rel="stylesheet" href="./css/footer.css">
 </head>
 <body>
@@ -179,6 +180,49 @@
       </button>
     </form>
   </section>
+
+  <!-- "How it works" — the leaderboard makes no sense to a cold visitor without
+       this one row of context. Three steps on desktop, stacks vertically below
+       ~640px. Kept slim (single row of tiles, not a "landing page section") so
+       it doesn't push the actual board off screen for returning visitors. -->
+  <section class="how-it-works" aria-label="How BidSpot works">
+    <div class="how-it-works-inner">
+      <div class="how-step">
+        <div class="how-step-num">1</div>
+        <div class="how-step-body">
+          <div class="how-step-title">Submit your site</div>
+          <div class="how-step-sub">Any product, domain or handle. Takes 30 seconds.</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">2</div>
+        <div class="how-step-body">
+          <div class="how-step-title">Bid from ₹100</div>
+          <div class="how-step-sub">Higher bid = higher rank. Pay via Razorpay.</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">3</div>
+        <div class="how-step-body">
+          <div class="how-step-title">Rank instantly</div>
+          <div class="how-step-sub">Live on the public board until someone outbids you.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live activity ticker — real bids from public.activity_feed, populated by
+       api/verify-payment.js on every successful payment. Rendered and kept
+       current by ui.js:renderActivityTicker(); an empty feed hides the whole
+       strip rather than showing an empty scroll rail. -->
+  <div class="activity-ticker" id="activity-ticker" hidden>
+    <div class="activity-ticker-label">
+      <span class="pulse-dot"></span> Live activity
+    </div>
+    <div class="activity-ticker-track" id="activity-ticker-track">
+      <!-- Rendered by ui.js -->
+    </div>
+  </div>
 
   <!-- Main Content Area: Leaderboard Companies + Sidebar with Top 5 Traders Today -->
   <main class="main-content">

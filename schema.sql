@@ -283,6 +283,85 @@ revoke all on function approve_listing_and_award_founding(uuid, int) from public
 revoke all on function approve_listing_and_award_founding(uuid, int) from anon, authenticated;
 grant execute on function approve_listing_and_award_founding(uuid, int) to service_role;
 
+-- ============================================================
+-- Admin dashboard aggregates
+-- ------------------------------------------------------------
+-- Called only by /api/admin/stats.js under the service role, so no browser grant
+-- is needed. Wrapped as functions rather than left as inline SQL in the API file
+-- so any operator with SQL access can validate the numbers directly, and so
+-- swapping the definition here immediately reshapes what the dashboard shows.
+-- ============================================================
+
+create or replace function admin_totals()
+returns table(paid_count bigint, volume_paise bigint, listings_count bigint) as $$
+  select
+    (select count(*)::bigint from bids where status = 'paid') as paid_count,
+    (select coalesce(sum(amount), 0)::bigint from bids where status = 'paid') as volume_paise,
+    (select count(*)::bigint from listings where status = 'approved') as listings_count;
+$$ language sql stable;
+
+create or replace function admin_bids_by_day(p_days int)
+returns table(day date, paid_count bigint, volume_paise bigint) as $$
+  -- generate_series gives us a row for every day in the window even if no bids
+  -- landed that day, so the line chart draws a flat 0 rather than skipping days.
+  with days as (
+    select generate_series(
+      (current_date - (p_days - 1))::date,
+      current_date,
+      interval '1 day'
+    )::date as day
+  )
+  select
+    d.day,
+    coalesce(count(b.id), 0)::bigint as paid_count,
+    coalesce(sum(b.amount), 0)::bigint as volume_paise
+  from days d
+  left join bids b
+    on b.status = 'paid'
+   and (b.verified_at at time zone 'utc')::date = d.day
+  group by d.day
+  order by d.day asc;
+$$ language sql stable;
+
+create or replace function admin_volume_by_category(p_limit int)
+returns table(category_id int, category_name text, volume_paise bigint) as $$
+  select
+    l.category_id,
+    coalesce(c.name, 'Uncategorized') as category_name,
+    coalesce(sum(b.amount), 0)::bigint as volume_paise
+  from bids b
+  join listings l on l.id = b.listing_id
+  left join categories c on c.id = l.category_id
+  where b.status = 'paid'
+  group by l.category_id, c.name
+  order by volume_paise desc
+  limit p_limit;
+$$ language sql stable;
+
+create or replace function admin_listings_by_status()
+returns table(status text, count bigint) as $$
+  select status, count(*)::bigint as count
+  from listings
+  group by status
+  order by status;
+$$ language sql stable;
+
+-- Lock the admin aggregates down to the service role only. They read every bid
+-- and every listing including non-approved rows, so the anon key must not be
+-- able to call them from a browser even though the underlying tables have RLS.
+revoke all on function admin_totals() from public;
+revoke all on function admin_bids_by_day(int) from public;
+revoke all on function admin_volume_by_category(int) from public;
+revoke all on function admin_listings_by_status() from public;
+revoke all on function admin_totals() from anon, authenticated;
+revoke all on function admin_bids_by_day(int) from anon, authenticated;
+revoke all on function admin_volume_by_category(int) from anon, authenticated;
+revoke all on function admin_listings_by_status() from anon, authenticated;
+grant execute on function admin_totals() to service_role;
+grant execute on function admin_bids_by_day(int) to service_role;
+grant execute on function admin_volume_by_category(int) to service_role;
+grant execute on function admin_listings_by_status() to service_role;
+
 -- Companion function used by api/cron/weekly-snapshot.js. Sums paid bids per listing
 -- within [p_week_start, p_week_end), ordered so the top bid per category comes first —
 -- there's no running weekly counter on `listings`, so this reads the immutable ledger.

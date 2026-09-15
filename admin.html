@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B1E2E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m14 13 5 5'/%3E%3Cpath d='m3 21 3-3'/%3E%3Cpath d='m9 15 2 2'/%3E%3Cpath d='m11 9 5 5'/%3E%3Cpath d='m13 3 6 6-6 6-6-6 6-6Z'/%3E%3C/svg%3E">
+  <title>Admin · BidSpot</title>
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/footer.css">
+  <link rel="stylesheet" href="./css/admin.css">
+  <script>
+    // Admin is deliberately light-only regardless of user theme — this is an
+    // operator tool, and charts and dense text read better against parchment.
+    document.documentElement.setAttribute('data-theme', 'light');
+  </script>
+  <!-- Chart.js from cdnjs (allowed CDN). Pinned to a known-good version. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js" defer></script>
+</head>
+<body>
+
+  <!-- Gate: shown until password check passes. All admin data endpoints ALSO
+       enforce the same cookie server-side, so this is only a UX gate — nobody
+       can bypass it and fetch data by manipulating the DOM. -->
+  <div class="admin-gate" id="admin-gate" role="dialog" aria-labelledby="admin-gate-title">
+    <div class="admin-gate-card">
+      <div class="admin-brand">Bid<span>Spot</span> · Admin</div>
+      <h1 id="admin-gate-title">Sign in</h1>
+      <p>Enter the operator password to view live dashboard data.</p>
+      <form id="admin-gate-form" autocomplete="off">
+        <label for="admin-password" class="sr-only">Password</label>
+        <input id="admin-password" type="password" required autocomplete="current-password" placeholder="Password">
+        <button type="submit" id="admin-gate-submit">Unlock</button>
+        <div class="admin-gate-error" id="admin-gate-error" hidden></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- The dashboard itself. Rendered by js/admin.js after auth succeeds. -->
+  <div class="admin-shell" id="admin-shell" hidden>
+
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <a href="./index.html" class="admin-brand">Bid<span>Spot</span> · Admin</a>
+        <div class="admin-header-right">
+          <span class="admin-generated" id="admin-generated">—</span>
+          <button type="button" id="admin-refresh" class="admin-btn admin-btn-ghost" title="Refresh (R)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"></path></svg>
+            <span>Refresh</span>
+          </button>
+          <a href="./index.html" class="admin-btn admin-btn-ghost">← Back to site</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-main">
+
+      <!-- Row 1: headline tiles + moderation queue -->
+      <section class="admin-tiles">
+        <div class="admin-tile">
+          <div class="admin-tile-label">Viewing right now</div>
+          <div class="admin-tile-value" id="tile-viewing">1</div>
+          <div class="admin-tile-sub">Live via Realtime presence</div>
+        </div>
+        <div class="admin-tile">
+          <div class="admin-tile-label">Paid bids · all time</div>
+          <div class="admin-tile-value" id="tile-bids">—</div>
+          <div class="admin-tile-sub" id="tile-bids-sub">—</div>
+        </div>
+        <div class="admin-tile">
+          <div class="admin-tile-label">Volume · all time</div>
+          <div class="admin-tile-value" id="tile-volume">—</div>
+          <div class="admin-tile-sub">In ₹, from the ledger</div>
+        </div>
+        <div class="admin-tile">
+          <div class="admin-tile-label">Live listings</div>
+          <div class="admin-tile-value" id="tile-listings">—</div>
+          <div class="admin-tile-sub" id="tile-listings-sub">—</div>
+        </div>
+      </section>
+
+      <!-- Row 2: two charts side by side. Bids/day is the "24h viewing" proxy
+           the user asked about — presence isn't sampled historically yet, but
+           bids-per-day is real, honest activity from the ledger. -->
+      <section class="admin-row">
+        <div class="admin-card admin-card-wide">
+          <div class="admin-card-head">
+            <h2>Paid bids per day</h2>
+            <span class="admin-card-hint">Last 30 days</span>
+          </div>
+          <div class="admin-chart-wrap"><canvas id="chart-bids"></canvas></div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-head">
+            <h2>Listings by status</h2>
+          </div>
+          <div class="admin-chart-wrap"><canvas id="chart-status"></canvas></div>
+        </div>
+      </section>
+
+      <!-- Row 3: category volume + recent bids -->
+      <section class="admin-row">
+        <div class="admin-card admin-card-wide">
+          <div class="admin-card-head">
+            <h2>Volume by category</h2>
+            <span class="admin-card-hint">Top 10 · all time</span>
+          </div>
+          <div class="admin-chart-wrap"><canvas id="chart-categories"></canvas></div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-head">
+            <h2>Recent bids</h2>
+            <span class="admin-card-hint">Last 20 paid</span>
+          </div>
+          <div class="admin-recent" id="admin-recent"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>

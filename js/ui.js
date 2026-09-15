@@ -4,10 +4,41 @@
 import { state } from './state.js';
 import { confettiEngine } from './confetti.js';
 import { renderLogo } from './get-logo.js';
-import { submitListing, trackClick } from './supabase-client.js';
+import { submitListing, trackClick, fetchActivityFeed, subscribeToActivityFeed } from './supabase-client.js';
 import { isSupabaseConfigured } from './config.js';
 import { escapeHtml, unescapeHtml, formatClicks, MIN_BID_INR } from './listing-mapper.js';
 import { COUNTRIES, OTHER_COUNTRY, findCountry, toE164 } from './country-codes.js';
+
+/** One row of the activity ticker, rendered from an `activity_feed` row. Amount
+    is in paise (per schema.sql). Kept above the class so the helper is easy to
+    find rather than buried inside a member. */
+function activityItemHtml(row) {
+  const inr = "₹" + Math.round(((row.amount || 0) / 100)).toLocaleString("en-IN");
+  const name = escapeHtml(row.listing_name || "Someone");
+  const when = shortTimeAgo(row.created_at);
+  return `
+    <span class="activity-item">
+      <strong>${name}</strong>
+      <span>bid</span>
+      <span class="activity-amount">${inr}</span>
+      <span class="activity-dot">·</span>
+      <span class="activity-time">${when}</span>
+    </span>
+  `;
+}
+
+/** Ticker-friendly relative time — deliberately shorter than listing-mapper's
+    timeAgo(). "2m ago" not "2 minutes ago" — the ticker has limited width. */
+function shortTimeAgo(iso) {
+  if (!iso) return "just now";
+  const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 /** Parses a fetch Response as JSON, but fails with a readable message instead of a
     raw "Unexpected token '<'..." SyntaxError if the server actually returned an
@@ -56,6 +87,7 @@ class UIManager {
     this.render();
     this.renderCountryCodePickers();
     this.initCategoryAutoScroll();
+    this.initActivityTicker();
     state.subscribe(() => this.render());
   }
 
@@ -1197,6 +1229,36 @@ class UIManager {
         <span>${log.message}</span>
       </div>
     `).join('');
+  }
+
+  /** Live activity ticker on the home page: reads from public.activity_feed
+      (populated by verify-payment.js on every paid bid) and re-renders on
+      realtime inserts. The whole strip is hidden when the feed is empty
+      rather than an empty rail masquerading as activity. */
+  async initActivityTicker() {
+    const strip = document.getElementById('activity-ticker');
+    const track = document.getElementById('activity-ticker-track');
+    if (!strip || !track) return;
+
+    const load = async () => {
+      const rows = await fetchActivityFeed({ limit: 20 });
+      if (!rows || rows.length === 0) {
+        strip.hidden = true;
+        return;
+      }
+      strip.hidden = false;
+
+      // Duplicate the item list so the CSS marquee animation loops seamlessly
+      // (transform: translateX(-50%) at the end lines up copy 2's start with
+      // copy 1's start). Kept in a single wrapper for a single animation.
+      const items = rows.map(activityItemHtml).join('');
+      track.innerHTML = `<div class="activity-ticker-flow">${items}${items}</div>`;
+    };
+
+    await load();
+    // Realtime: refetch on every insert into activity_feed. Cheap because the
+    // fetch itself is a 20-row query with a covering index on created_at.
+    subscribeToActivityFeed(load);
   }
 
   filterBySearchQuery(query) {

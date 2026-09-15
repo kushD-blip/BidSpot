@@ -119,6 +119,19 @@ export async function trackClick(listingId) {
   if (error) console.error("trackClick error:", error);
 }
 
+/** Realtime subscription: calls `onChange` whenever a new activity_feed row is
+    inserted (used by the home-page ticker so real bids appear without a refresh).
+    INSERT-only because activity feed rows are append-only; no need to listen for
+    updates or deletes. Returns an unsubscribe function. */
+export function subscribeToActivityFeed(onInsert) {
+  if (!supabase) return () => {};
+  const channel = supabase
+    .channel("activity-feed-inserts")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "activity_feed" }, onInsert)
+    .subscribe();
+  return () => supabase.removeChannel(channel);
+}
+
 /** Realtime subscription: calls `onChange` whenever any listing row changes (used to
     re-render the leaderboard live instead of polling). Returns an unsubscribe function. */
 export function subscribeToListingChanges(onChange) {
