@@ -88,7 +88,41 @@ class UIManager {
     this.renderCountryCodePickers();
     this.initCategoryAutoScroll();
     this.initActivityTicker();
+    this.initHowItWorksScroll();
     state.subscribe(() => this.render());
+  }
+
+  /** Fades the "How it works" strip out when the visitor scrolls down and back
+      in when they scroll up. Uses opacity + transform (both compositor-only)
+      rather than height so nothing reflows; a rAF gate keeps the scroll handler
+      cheap; a small threshold ignores wheel/touch jitter so it doesn't flicker
+      on a single tick of movement. */
+  initHowItWorksScroll() {
+    const section = document.querySelector('.how-it-works');
+    if (!section) return;
+
+    let lastY = window.scrollY;
+    let ticking = false;
+    const JITTER_PX = 6;
+
+    const update = () => {
+      const y = window.scrollY;
+      const dy = y - lastY;
+      if (Math.abs(dy) >= JITTER_PX) {
+        // Going down (dy > 0) hides; going up (dy < 0) reveals. toggle(force)
+        // sets state deterministically so a fast scroll can't leave it stuck.
+        section.classList.toggle('scrolled-past', dy > 0);
+        lastY = y;
+      }
+      ticking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    }, { passive: true });
   }
 
   /** Fills both country pickers on the checkout form from the shared list in
