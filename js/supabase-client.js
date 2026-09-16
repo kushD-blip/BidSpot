@@ -16,11 +16,16 @@ export const supabase = isSupabaseConfigured ? createClient(SUPABASE_URL, SUPABA
 
 export async function fetchApprovedListings({ orderBy = "total_bid_alltime", limit = 100 } = {}) {
   if (!supabase) return [];
+  // Tie-breaker: when two listings share the same total, the OLDER listing wins the
+  // rank. To overtake, a challenger must bid MORE — not the same amount. Without this
+  // secondary sort Postgres returns tied rows in arbitrary order and rank #2 vs #3
+  // could flip between page loads. See rules.html Ranking section.
   const { data, error } = await supabase
     .from("listings")
     .select("*, categories(slug, name, icon)")
     .eq("status", "approved")
     .order(orderBy, { ascending: false })
+    .order("created_at", { ascending: true })
     .limit(limit);
 
   if (error) {

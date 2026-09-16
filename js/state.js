@@ -466,7 +466,17 @@ class StateManager {
   }
 
   sortAndRank() {
-    this.items.sort((a, b) => StateManager.amountInRupees(b) - StateManager.amountInRupees(a));
+    // Ties on total: older listing (earlier createdAt) wins the rank. Matches the
+    // secondary sort in fetchApprovedListings so the client and server agree on
+    // which tied listing sits ahead. Listings without a createdAt (demo dataset,
+    // or a row that failed to map) fall to the back of a tie group deterministically.
+    this.items.sort((a, b) => {
+      const diff = StateManager.amountInRupees(b) - StateManager.amountInRupees(a);
+      if (diff !== 0) return diff;
+      const aTs = a.createdAt ? Date.parse(a.createdAt) : Number.POSITIVE_INFINITY;
+      const bTs = b.createdAt ? Date.parse(b.createdAt) : Number.POSITIVE_INFINITY;
+      return aTs - bTs;
+    });
     this.items.forEach((item, idx) => {
       item.rank = idx + 1;
     });

@@ -113,8 +113,11 @@ create table if not exists public.listings (
 alter table public.listings add column if not exists founding_bidder boolean default false;
 
 create index if not exists idx_listings_category on public.listings(category_id);
-create index if not exists idx_listings_alltime on public.listings(total_bid_alltime desc);
-create index if not exists idx_listings_today on public.listings(total_bid_today desc);
+-- The `created_at asc` second column matches the tie-breaker in
+-- fetchApprovedListings (older listing wins ties). Without it, Postgres would still
+-- return correct results but with an extra sort step for the secondary key.
+create index if not exists idx_listings_alltime on public.listings(total_bid_alltime desc, created_at asc);
+create index if not exists idx_listings_today on public.listings(total_bid_today desc, created_at asc);
 
 -- 'fintech' and 'saas' have no equivalent in the category list above (that ground is
 -- covered by 'Business, Finance & Legal' / 'Crypto, Web3 & Investing' and by the more
