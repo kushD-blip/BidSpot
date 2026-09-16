@@ -1,59 +1,77 @@
-// api/admin/stats.js  (GET /api/admin/stats)
-// One consolidated endpoint that returns everything the admin dashboard renders:
-// headline totals, bids-per-day for the last 30 days, volume by category, listings
-// by status, and the 20 most recent paid bids. One round-trip so the dashboard
-// paints in a single frame; each subquery is cheap and independent so they run in
-// parallel.
+/* api/admin/stats.js  (GET /api/admin/stats)
+ *
+ * One consolidated read of everything the admin dashboard renders. Six queries
+ * fan out in parallel and each one degrades independently — a broken aggregate
+ * returns as an empty array/zero rather than a 500, so a single database issue
+ * can't take the whole dashboard down.
+ *
+ * All aggregates are locked to service_role at the SQL layer (see schema.sql),
+ * so this endpoint is the only path from the browser to the numbers.
+ */
 
-import { supabaseAdmin } from "../../lib/razorpay.js";
-import { requireAdmin } from "../../lib/admin-auth.js";
+import { supabaseAdmin } from '../../lib/razorpay.js';
+import { requireAdmin } from '../../lib/admin-auth.js';
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
   if (requireAdmin(req, res)) return;
 
-  try {
-    const [totals, bidsByDay, topCategories, listingsByStatus, recentBids, pendingCount] = await Promise.all([
-      // Headline totals: all-time paid bid count + volume (paise).
-      supabaseAdmin.rpc("admin_totals"),
+  // Runs each aggregate in a try wrapper so one bad aggregate returns []/0
+  // and the rest of the dashboard still paints. Cheaper than a single try
+  // around the whole Promise.all, which would blank every tile on any failure.
+  const safe = async (label, run, fallback) => {
+    try { return await run(); }
+    catch (err) { console.error(`[admin/stats] ${label} failed:`, err); return fallback; }
+  };
 
-      // Bids per day for the last 30 days, ordered oldest first for a line chart.
-      supabaseAdmin.rpc("admin_bids_by_day", { p_days: 30 }),
+  const [totals, bidsByDay, topCategories, listingsByStatus, recentBids, pendingCount] =
+    await Promise.all([
+      safe('totals',
+        async () => (await supabaseAdmin.rpc('admin_totals'))?.data?.[0]
+          ?? { paid_count: 0, volume_paise: 0, listings_count: 0 },
+        { paid_count: 0, volume_paise: 0, listings_count: 0 }),
 
-      // Volume per category (paise), top 10.
-      supabaseAdmin.rpc("admin_volume_by_category", { p_limit: 10 }),
+      safe('bidsByDay',
+        async () => (await supabaseAdmin.rpc('admin_bids_by_day', { p_days: 30 }))?.data ?? [],
+        []),
 
-      // Listing counts by status: pending / approved / rejected / removed.
-      supabaseAdmin.rpc("admin_listings_by_status"),
+      safe('topCategories',
+        async () => (await supabaseAdmin.rpc('admin_volume_by_category', { p_limit: 10 }))?.data ?? [],
+        []),
 
-      // 20 most recent PAID bids with their listing name — the admin's "what's
-      // happening right now" feed. Redacted: no email or phone leaks here even
-      // to me; that data is joined only on the moderation flow when needed.
-      supabaseAdmin
-        .from("bids")
-        .select("id, amount, currency, created_at, listings(name)")
-        .eq("status", "paid")
-        .order("created_at", { ascending: false })
-        .limit(20),
+      safe('listingsByStatus',
+        async () => (await supabaseAdmin.rpc('admin_listings_by_status'))?.data ?? [],
+        []),
 
-      // Pending listing count — a "moderation queue" number that surfaces
-      // whether anything needs attention.
-      supabaseAdmin.from("listings").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      // Direct query rather than an aggregate: recent bids need the joined
+      // listing name, and it's fast enough for 20 rows.
+      safe('recentBids',
+        async () => (await supabaseAdmin
+          .from('bids')
+          .select('id, amount, currency, created_at, listings(name)')
+          .eq('status', 'paid')
+          .order('created_at', { ascending: false })
+          .limit(20))?.data ?? [],
+        []),
+
+      safe('pendingCount',
+        async () => (await supabaseAdmin
+          .from('listings')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending'))?.count ?? 0,
+        0),
     ]);
 
-    // rpc() returns { data, error } — flatten to plain values, letting a broken
-    // aggregate degrade gracefully to `null` on the dashboard rather than a 500.
-    return res.status(200).json({
-      totals: totals.data || { paid_count: 0, volume_paise: 0, listings_count: 0 },
-      bidsByDay: bidsByDay.data || [],
-      topCategories: topCategories.data || [],
-      listingsByStatus: listingsByStatus.data || [],
-      recentBids: recentBids.data || [],
-      pendingCount: pendingCount.count || 0,
-      generatedAt: new Date().toISOString(),
-    });
-  } catch (err) {
-    console.error("[admin/stats] failed:", err);
-    return res.status(500).json({ error: "Could not load stats." });
-  }
+  return res.status(200).json({
+    totals,
+    bidsByDay,
+    topCategories,
+    listingsByStatus,
+    recentBids,
+    pendingCount,
+    generatedAt: new Date().toISOString(),
+  });
 }
