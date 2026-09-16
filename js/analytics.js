@@ -5,41 +5,28 @@ import { fetchApprovedListings, fetchCategories } from './supabase-client.js';
 import { mapSupabaseListing } from './listing-mapper.js';
 import { isSupabaseConfigured } from './config.js';
 
+const INR = (n) => '₹' + n.toLocaleString('en-IN');
+
 async function render() {
-  const statCards = document.getElementById('stat-cards');
+  const kpiListings = document.getElementById('kpi-listings');
+  const kpiVolume = document.getElementById('kpi-volume');
+  const kpiClicks = document.getElementById('kpi-clicks');
+  const kpiCategories = document.getElementById('kpi-categories');
   const breakdown = document.getElementById('category-breakdown');
-  if (!statCards || !breakdown) return;
 
   if (!isSupabaseConfigured) {
-    statCards.innerHTML = `<div class="empty-state-block"><h3>Not connected yet</h3><p>Analytics needs Supabase configured in js/config.js.</p></div>`;
+    if (breakdown) breakdown.innerHTML = '<div class="empty-state-block"><h3>Not connected yet</h3><p>Analytics needs Supabase configured in js/config.js.</p></div>';
     return;
   }
 
-  const [listings, categories] = await Promise.all([fetchApprovedListings({ limit: 1000 }), fetchCategories()]);
-  const items = listings.map((row) => mapSupabaseListing(row));
+  const [listings, categories] = await Promise.all([
+    fetchApprovedListings({ limit: 1000 }),
+    fetchCategories(),
+  ]);
 
+  const items = listings.map((row) => mapSupabaseListing(row));
   const totalVolumeINR = items.reduce((sum, i) => sum + i.amountINR, 0);
   const totalClicks = items.reduce((sum, i) => sum + i.clicks, 0);
-
-  statCards.innerHTML = `
-    <div class="stat-card">
-      <div class="stat-card-value">${items.length.toLocaleString('en-IN')}</div>
-      <div class="stat-card-label">live listings</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-value">₹${totalVolumeINR.toLocaleString('en-IN')}</div>
-      <div class="stat-card-label">total volume bid</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-value">${totalClicks.toLocaleString('en-IN')}</div>
-      <div class="stat-card-label">total clicks</div>
-    </div>
-  `;
-
-  if (categories.length === 0) {
-    breakdown.innerHTML = `<div class="empty-state-block"><h3>No categories yet</h3><p>Run schema.sql in Supabase to seed the category list.</p></div>`;
-    return;
-  }
 
   const rows = categories
     .map((cat) => {
@@ -49,20 +36,37 @@ async function render() {
     })
     .sort((a, b) => b.volume - a.volume);
 
+  const activeCategories = rows.filter((r) => r.count > 0).length;
+
+  if (kpiListings) kpiListings.textContent = items.length.toLocaleString('en-IN');
+  if (kpiVolume) kpiVolume.textContent = INR(totalVolumeINR);
+  if (kpiClicks) kpiClicks.textContent = totalClicks.toLocaleString('en-IN');
+  if (kpiCategories) kpiCategories.textContent = activeCategories.toLocaleString('en-IN');
+
+  if (!breakdown) return;
+  if (categories.length === 0) {
+    breakdown.innerHTML = '<div class="empty-state-block"><h3>No categories yet</h3><p>Run schema.sql in Supabase to seed the category list.</p></div>';
+    return;
+  }
+
   const maxVolume = Math.max(1, ...rows.map((r) => r.volume));
 
   breakdown.innerHTML = rows
     .map(
       (r) => `
-    <div style="display:flex; align-items:center; gap:12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:12px 16px;">
-      <span style="font-size:1.1rem;">${r.cat.icon || '🏷️'}</span>
-      <span style="flex:0 0 130px; font-weight:600; color:var(--text-primary); font-size:0.88rem;">${r.cat.name}</span>
-      <div style="flex:1; background:var(--bg-secondary); border-radius:var(--radius-full); height:8px; overflow:hidden;">
-        <div style="width:${Math.round((r.volume / maxVolume) * 100)}%; height:100%; background:var(--accent-primary);"></div>
+    <div class="analytics-cat-row">
+      <div class="analytics-cat-icon">${r.cat.icon || '🏷️'}</div>
+      <div class="analytics-cat-body">
+        <span class="analytics-cat-name">${r.cat.name}</span>
+        <div class="analytics-cat-bar-track">
+          <div class="analytics-cat-bar-fill" style="width:${Math.round((r.volume / maxVolume) * 100)}%"></div>
+        </div>
       </div>
-      <span style="font-size:0.8rem; color:var(--text-muted); flex:0 0 auto; white-space:nowrap;">${r.count} listing${r.count === 1 ? '' : 's'} · ₹${r.volume.toLocaleString('en-IN')}</span>
-    </div>
-  `
+      <div class="analytics-cat-meta">
+        ${r.count} listing${r.count === 1 ? '' : 's'}<br>
+        <strong>${INR(r.volume)}</strong>
+      </div>
+    </div>`
     )
     .join('');
 }

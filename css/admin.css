@@ -1,7 +1,7 @@
 /* BidSpot — Admin dashboard. Standalone from the public site's own CSS so a
    change to the public leaderboard's tokens can't ripple through here.
    Depends only on css/variables.css for the palette. Light-only by design
-   (see the theme lock in admin.html). */
+   (see the theme lock in ctrl-9k7x.html). */
 
 * { box-sizing: border-box; }
 
