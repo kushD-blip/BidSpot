@@ -155,7 +155,7 @@ export default async function handler(req, res) {
       amountPaise: bid.amount,
       paymentId: razorpay_payment_id,
       isTopUp: !wasPending,
-      siteUrl: process.env.PUBLIC_SITE_URL || "https://bidspot.in",
+      siteUrl: process.env.SITE_URL || "https://bidspot.in",
       supportEmail: process.env.SUPPORT_EMAIL || "",
     });
     await sendEmail({
