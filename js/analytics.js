@@ -7,6 +7,11 @@ import { isSupabaseConfigured } from './config.js';
 
 const INR = (n) => '₹' + n.toLocaleString('en-IN');
 
+let currentRange = 7;
+let cachedActivity = [];
+let cachedListings = [];
+let cachedEls = {};
+
 function shortTimeAgo(iso) {
   if (!iso) return 'Just now';
   const ms = Date.now() - new Date(iso).getTime();
@@ -27,6 +32,15 @@ function formatDay(d) {
   return d.toLocaleDateString('en-IN', { weekday: 'short' });
 }
 
+function buildBidEvents(activity, listings) {
+  if (activity.length > 0) return activity;
+  return listings.map((row) => ({
+    listing_name: row.name,
+    amount: row.total_bid_alltime || 0,
+    created_at: row.created_at,
+  }));
+}
+
 async function render() {
   const els = {
     kpiListings: document.getElementById('kpi-listings'),
@@ -37,7 +51,9 @@ async function render() {
     topCats: document.getElementById('top-categories'),
     recentBids: document.getElementById('recent-bids'),
     highlights: document.getElementById('highlights'),
+    rangeTabs: document.getElementById('range-tabs'),
   };
+  cachedEls = els;
 
   if (!isSupabaseConfigured) {
     const msg = '<div class="a-chart-empty">Analytics needs Supabase configured in js/config.js.</div>';
@@ -51,8 +67,11 @@ async function render() {
   const [listings, categories, activity] = await Promise.all([
     fetchApprovedListings({ limit: 1000 }),
     fetchCategories(),
-    fetchActivityFeed({ limit: 100 }),
+    fetchActivityFeed({ limit: 500 }),
   ]);
+
+  cachedListings = listings;
+  cachedActivity = buildBidEvents(activity, listings);
 
   const items = listings.map((row) => mapSupabaseListing(row));
   const totalVolume = items.reduce((s, i) => s + i.amountINR, 0);
@@ -77,43 +96,86 @@ async function render() {
   if (els.kpiClicks) els.kpiClicks.textContent = totalClicks.toLocaleString('en-IN');
   if (els.kpiCategories) els.kpiCategories.textContent = activeCats.toLocaleString('en-IN');
 
-  renderChart(els.chart, activity);
+  renderChart(els.chart, cachedActivity, currentRange);
   renderTopCats(els.topCats, catRows);
-  renderRecentBids(els.recentBids, activity);
+  renderRecentBids(els.recentBids, cachedActivity);
   renderHighlights(els.highlights, items, catRows);
+
+  if (els.rangeTabs) {
+    els.rangeTabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-range]');
+      if (!btn) return;
+      currentRange = Number(btn.dataset.range);
+      els.rangeTabs.querySelectorAll('.a-range-tab').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderChart(els.chart, cachedActivity, currentRange);
+    });
+  }
 }
 
-function renderChart(el, activity) {
+function renderChart(el, activity, rangeDays = 7) {
   if (!el) return;
 
-  const days = [];
   const now = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    d.setHours(0, 0, 0, 0);
-    days.push({ date: d, volume: 0, count: 0 });
+  const buckets = [];
+
+  if (rangeDays <= 7) {
+    for (let i = rangeDays - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      buckets.push({ date: d, label: formatDate(d), sub: formatDay(d), volume: 0, count: 0 });
+    }
+  } else {
+    const weeks = Math.ceil(rangeDays / 7);
+    for (let i = weeks - 1; i >= 0; i--) {
+      const end = new Date(now);
+      end.setDate(end.getDate() - i * 7);
+      end.setHours(23, 59, 59, 999);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+      buckets.push({ date: start, end, label: formatDate(start), sub: formatDate(end), volume: 0, count: 0 });
+    }
   }
 
-  let totalWeekVol = 0;
-  let totalWeekBids = 0;
+  const rangeStart = new Date(now);
+  rangeStart.setDate(rangeStart.getDate() - rangeDays);
+  rangeStart.setHours(0, 0, 0, 0);
+
+  let totalVol = 0;
+  let totalBids = 0;
 
   activity.forEach((a) => {
     const ad = new Date(a.created_at);
-    const adStr = ad.toDateString();
-    const match = days.find((d) => d.date.toDateString() === adStr);
-    if (match) {
-      const v = Math.round((a.amount || 0) / 100);
-      match.volume += v;
-      match.count++;
-      totalWeekVol += v;
-      totalWeekBids++;
+    if (ad < rangeStart) return;
+
+    if (rangeDays <= 7) {
+      const adStr = ad.toDateString();
+      const match = buckets.find((b) => b.date.toDateString() === adStr);
+      if (match) {
+        const v = Math.round((a.amount || 0) / 100);
+        match.volume += v;
+        match.count++;
+        totalVol += v;
+        totalBids++;
+      }
+    } else {
+      const match = buckets.find((b) => ad >= b.date && ad <= b.end);
+      if (match) {
+        const v = Math.round((a.amount || 0) / 100);
+        match.volume += v;
+        match.count++;
+        totalVol += v;
+        totalBids++;
+      }
     }
   });
 
-  const maxVol = Math.max(1, ...days.map((d) => d.volume));
+  const maxVol = Math.max(1, ...buckets.map((d) => d.volume));
+  const periodLabel = rangeDays <= 7 ? 'this week' : rangeDays <= 30 ? 'this month' : 'last 3 months';
 
-  const bars = days
+  const bars = buckets
     .map((d) => {
       const pct = Math.round((d.volume / maxVol) * 100);
       const hasData = d.volume > 0;
@@ -123,8 +185,8 @@ function renderChart(el, activity) {
         <div class="a-bar-track">
           <div class="a-bar-fill${hasData ? '' : ' a-bar-fill--empty'}" style="height:${hasData ? pct : 100}%"></div>
         </div>
-        <div class="a-bar-date">${formatDate(d.date)}</div>
-        <div class="a-bar-day">${formatDay(d.date)}</div>
+        <div class="a-bar-date">${d.label}</div>
+        <div class="a-bar-day">${d.sub}</div>
       </div>`;
     })
     .join('');
@@ -132,8 +194,8 @@ function renderChart(el, activity) {
   el.innerHTML = `
     <div class="a-bars">${bars}</div>
     <div class="a-chart-summary">
-      <span class="a-chart-stat"><strong>${totalWeekBids}</strong> bids this week</span>
-      <span class="a-chart-stat"><strong>${INR(totalWeekVol)}</strong> volume</span>
+      <span class="a-chart-stat"><strong>${totalBids}</strong> bid${totalBids === 1 ? '' : 's'} ${periodLabel}</span>
+      <span class="a-chart-stat"><strong>${INR(totalVol)}</strong> volume</span>
     </div>`;
 }
 
@@ -173,7 +235,8 @@ function renderRecentBids(el, activity) {
     return;
   }
 
-  const rows = activity.slice(0, 6);
+  const sorted = [...activity].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const rows = sorted.slice(0, 6);
   el.innerHTML = `
     <table class="a-table">
       <thead>

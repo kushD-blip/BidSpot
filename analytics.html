@@ -101,7 +101,11 @@
       <section class="a-panel">
         <div class="a-panel-head">
           <h2>Bid activity</h2>
-          <span class="a-hint">Last 7 days</span>
+          <div class="a-range-tabs" id="range-tabs">
+            <button class="a-range-tab active" data-range="7">7 d</button>
+            <button class="a-range-tab" data-range="30">1 m</button>
+            <button class="a-range-tab" data-range="90">3 m</button>
+          </div>
         </div>
         <div id="daily-chart" class="a-chart-area">
           <div class="a-chart-empty">Loading…</div>

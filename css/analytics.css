@@ -204,6 +204,36 @@
   font-weight: 500;
 }
 
+.a-range-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.a-range-tab {
+  background: none;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.a-range-tab:hover {
+  color: var(--text-primary);
+}
+
+.a-range-tab.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .a-view-all {
   font-size: 0.78rem;
   color: var(--accent-primary);
