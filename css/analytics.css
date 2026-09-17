@@ -297,18 +297,26 @@
   align-items: flex-end;
   border-radius: 6px 6px 2px 2px;
   overflow: hidden;
+  border-bottom: 2px solid var(--border-subtle);
 }
 
 .a-bar-fill {
   width: 100%;
   background: var(--accent-primary);
-  border-radius: 6px 6px 2px 2px;
+  border-radius: 6px 6px 0 0;
   transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .a-bar-fill--empty {
-  background: var(--bg-secondary);
-  min-height: 100%;
+  background: var(--border-subtle);
+  border-radius: 4px 4px 0 0;
+  opacity: 0.5;
+}
+
+.a-bar-col--today .a-bar-date,
+.a-bar-col--today .a-bar-day {
+  color: var(--accent-primary);
+  font-weight: 700;
 }
 
 .a-bar-date {

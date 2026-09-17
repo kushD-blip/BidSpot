@@ -174,19 +174,23 @@ function renderChart(el, activity, rangeDays = 7) {
 
   const maxVol = Math.max(1, ...buckets.map((d) => d.volume));
   const periodLabel = rangeDays <= 7 ? 'this week' : rangeDays <= 30 ? 'this month' : 'last 3 months';
+  const todayStr = now.toDateString();
 
   const bars = buckets
     .map((d) => {
-      const pct = Math.round((d.volume / maxVol) * 100);
       const hasData = d.volume > 0;
+      const pct = hasData ? Math.max(12, Math.round((d.volume / maxVol) * 100)) : 4;
+      const isToday = d.date.toDateString() === todayStr;
+      const fillClass = hasData ? '' : ' a-bar-fill--empty';
+      const todayClass = isToday ? ' a-bar-col--today' : '';
       return `
-      <div class="a-bar-col">
+      <div class="a-bar-col${todayClass}">
         <div class="a-bar-val">${hasData ? INR(d.volume) : ''}</div>
         <div class="a-bar-track">
-          <div class="a-bar-fill${hasData ? '' : ' a-bar-fill--empty'}" style="height:${hasData ? pct : 100}%"></div>
+          <div class="a-bar-fill${fillClass}" style="height:${pct}%"></div>
         </div>
         <div class="a-bar-date">${d.label}</div>
-        <div class="a-bar-day">${d.sub}</div>
+        <div class="a-bar-day">${isToday ? 'Today' : d.sub}</div>
       </div>`;
     })
     .join('');
