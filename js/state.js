@@ -366,7 +366,7 @@ class StateManager {
         },
         {
           id: 'act-3',
-          message: "VibeCoding AI placed ₹10,37,000 floor bid",
+          message: "VibeCoding AI placed ₹10,37,000 bid",
           timestamp: new Date().toISOString()
         }
       ];
@@ -722,7 +722,7 @@ class StateManager {
     this.stats.totalRevenueUSD += numericAmount;
     this.stats.totalProducts += 1;
 
-    this.logActivity(`${title} placed a ${this.formatAmount(numericAmount)} floor bid`);
+    this.logActivity(`${title} placed a ${this.formatAmount(numericAmount)} bid`);
 
     this.notify();
 

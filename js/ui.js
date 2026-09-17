@@ -721,7 +721,7 @@ class UIManager {
         </div>
 
         <div class="card-price-section">
-          <span class="card-price-label">FLOOR BID</span>
+          <span class="card-price-label">TOTAL BID</span>
           <span class="card-price">${state.formatListingAmount(item)}</span>
         </div>
       </div>
