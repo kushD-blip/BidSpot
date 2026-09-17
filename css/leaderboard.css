@@ -147,6 +147,10 @@
   color: var(--text-secondary);
   line-height: 1.45;
   margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-meta {

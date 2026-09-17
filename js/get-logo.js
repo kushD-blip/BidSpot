@@ -6,7 +6,9 @@ export function getLogoUrl(domainOrUrl) {
   return {
     domain,
     primary: domain ? `https://logo.clearbit.com/${domain}?size=128` : null,
-    fallback: domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : null,
+    fallback1: domain ? `https://${domain}/favicon.svg` : null,
+    fallback2: domain ? `https://${domain}/favicon.ico` : null,
+    fallback3: domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : null,
   };
 }
 
@@ -26,7 +28,7 @@ function extractDomain(input) {
  * so a dead network request never leaves a blank card.
  */
 export function renderLogo(container, domainOrUrl, { text, bg } = {}) {
-  const { primary, fallback } = getLogoUrl(domainOrUrl);
+  const { primary, fallback1, fallback2, fallback3 } = getLogoUrl(domainOrUrl);
 
   if (!primary) {
     renderInitials(container, text, bg);
@@ -42,11 +44,11 @@ export function renderLogo(container, domainOrUrl, { text, bg } = {}) {
   img.style.borderRadius = "inherit";
   img.style.background = "#fff";
 
+  const fallbacks = [fallback1, fallback2, fallback3].filter(Boolean);
   let attempt = 0;
   img.onerror = () => {
-    attempt++;
-    if (attempt === 1 && fallback) {
-      img.src = fallback;
+    if (attempt < fallbacks.length) {
+      img.src = fallbacks[attempt++];
     } else {
       renderInitials(container, text, bg);
     }
