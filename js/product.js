@@ -163,7 +163,7 @@ async function render() {
       <p>
         Anyone can take this spot by bidding ${formatINR(toOutbidINR)} or more on the
         ${item.category} board. Rankings are ordered purely by total bid amount — see the
-        <a href="./rules.html">House Rules</a> for how that's calculated.
+        <a href="./rules.html">Board Rules</a> for how that's calculated.
       </p>
 
       <a href="./index.html?outbid=${encodeURIComponent(item.id)}" class="btn-primary product-claim-btn">

@@ -150,6 +150,7 @@ export default async function handler(req, res) {
       bidderName: bid.bidder_name,
       listingName: listingBefore?.name,
       listingUrl: listingBefore?.url,
+      listingId: bid.listing_id,
       categoryName: listingBefore?.categories?.name,
       rank,
       amountPaise: bid.amount,

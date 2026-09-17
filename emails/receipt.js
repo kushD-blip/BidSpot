@@ -19,6 +19,7 @@ export function buildReceiptEmail({
   bidderName,
   listingName,
   listingUrl,
+  listingId,
   categoryName,
   rank,
   amountPaise,
@@ -30,9 +31,10 @@ export function buildReceiptEmail({
   const amount = INR(amountPaise);
   const displayName = escape(bidderName || "there");
   const listingSafe = escape(listingName || "your listing");
-  const listingHref = escape(listingUrl || siteUrl || "https://bidspot.in");
-  const categorySafe = escape(categoryName || "");
   const site = siteUrl || "https://bidspot.in";
+  const bidspotListingHref = listingId ? escape(`${site}/product.html?id=${listingId}`) : escape(site);
+  const externalHref = escape(listingUrl || site);
+  const categorySafe = escape(categoryName || "");
 
   const headline = isTopUp
     ? `Your ${amount} top-up on ${listingSafe} was received`
@@ -99,7 +101,7 @@ export function buildReceiptEmail({
           <!-- CTA -->
           <tr>
             <td style="padding:8px 28px 24px;" align="center">
-              <a href="${listingHref}" style="display:inline-block;background:#8B1E2E;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:700;">
+              <a href="${bidspotListingHref}" style="display:inline-block;background:#8B1E2E;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:9999px;font-size:14px;font-weight:700;">
                 See your listing on BidSpot →
               </a>
             </td>
@@ -151,7 +153,7 @@ export function buildReceiptEmail({
     "",
     `Amount:     ${amount}`,
     `Payment ID: ${paymentId || "-"}`,
-    `Listing:    ${listingUrl || site}`,
+    `Listing:    ${listingId ? `${site}/product.html?id=${listingId}` : site}`,
     "",
     supportEmail
       ? `Questions about this payment? Reply here or write to ${supportEmail}.`
