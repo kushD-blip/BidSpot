@@ -474,9 +474,9 @@
 /* .vpa-copy-row and .btn-copy-vpa lived here for the removed UPI-QR block. */
 
 .modal-card.split-checkout-card {
-  max-width: 560px;
+  max-width: 620px;
   width: 95%;
-  max-height: 92vh;
+  max-height: 96vh;
   border-radius: var(--radius-lg);
 }
 
@@ -485,7 +485,7 @@
   grid-template-columns: 1fr;
   gap: 0;
   padding: 0;
-  max-height: calc(92vh - 74px);
+  max-height: calc(96vh - 74px);
   overflow-y: auto;
 }
 

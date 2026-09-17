@@ -350,26 +350,16 @@ button {
 }
 
 
-.currency-toggle {
-  display: flex;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  padding: 3px;
-  border-radius: var(--radius-full);
-}
-
-.currency-option {
+.currency-badge {
+  display: inline-flex;
+  align-items: center;
   padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
-}
-
-.currency-option.active {
-  background: var(--accent-primary);
-  color: #ffffff;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
 }
 
 /* Category Filter Bar */
@@ -1444,6 +1434,6 @@ button {
 }
 
 @media (max-width: 420px) {
-  .currency-toggle { display: none; }
+  .currency-badge { display: none; }
 }
 

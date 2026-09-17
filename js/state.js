@@ -321,7 +321,7 @@ class StateManager {
   constructor() {
     this.appName = "BidSpot";
     this.USD_TO_INR = USD_TO_INR; // instance alias — ui.js reads state.USD_TO_INR directly
-    this.currency = localStorage.getItem('bidspot_currency') || 'INR'; // 'INR' or 'USD'
+    this.currency = 'INR';
     
     // Light is the default regardless of system preference — only an explicit
     // choice via the theme toggle (saved below) switches it to dark.
@@ -487,8 +487,7 @@ class StateManager {
       a ₹2,100 listing read as "₹2,125" on the card — and then made the hero's
       "beat it for ₹2,121" look like nonsense next to it. */
   formatListingAmount(item) {
-    if (this.currency === 'INR') return this.formatINR(StateManager.amountInRupees(item));
-    return this.formatUSD(item.amountUSD);
+    return this.formatINR(StateManager.amountInRupees(item));
   }
 
   convertUSDToINR(amountUSD) {
@@ -649,16 +648,18 @@ class StateManager {
       ? this.items.length
       : Math.max(this.stats.totalProducts, 2881 + (this.items.length - INITIAL_LEADERBOARD.length));
 
+    const totalClicks = this.items.reduce((sum, item) => sum + (item.clicks || 0), 0);
+
     return {
       totalVisitors: this.stats.totalVisitors,
       totalVisitorsFormatted: this.stats.totalVisitors.toLocaleString('en-US'),
+      totalClicks: totalClicks,
+      totalClicksFormatted: totalClicks.toLocaleString('en-IN'),
       totalRevenueUSD: totalRevenueUSD,
       totalRevenueUSDFormatted: '$' + totalRevenueUSD.toLocaleString('en-US'),
       totalRevenueINR: totalRevenueINR,
       totalRevenueINRFormatted: '₹' + totalRevenueINR.toLocaleString('en-IN'),
-      displayRevenueFormatted: this.currency === 'INR'
-        ? this.formatINR(totalRevenueINR)
-        : this.formatUSD(totalRevenueUSD),
+      displayRevenueFormatted: this.formatINR(totalRevenueINR),
       totalProducts: totalProducts,
       totalProductsFormatted: totalProducts.toLocaleString('en-US'),
       activeOnline: activeOnline,

@@ -189,17 +189,7 @@ class UIManager {
       });
     }
 
-    // Currency Toggle (INR / USD)
-    const inrBtn = document.getElementById('curr-inr');
-    const usdBtn = document.getElementById('curr-usd');
-    if (inrBtn && usdBtn) {
-      inrBtn.addEventListener('click', () => {
-        state.setCurrency('INR');
-      });
-      usdBtn.addEventListener('click', () => {
-        state.setCurrency('USD');
-      });
-    }
+    // Currency is INR-only now; no toggle needed.
 
     // Category Chips
     ['category-bar', 'category-chips'].forEach(id => {
@@ -541,7 +531,7 @@ class UIManager {
 
     if (onlineEl) onlineEl.textContent = stats.activeOnlineFormatted;
     if (revEl) revEl.textContent = stats.displayRevenueFormatted;
-    if (visEl) visEl.textContent = stats.totalVisitorsFormatted;
+    if (visEl) visEl.textContent = stats.totalClicksFormatted;
     if (prodEl) prodEl.textContent = stats.totalProductsFormatted;
   }
 
@@ -601,10 +591,7 @@ class UIManager {
   }
 
   renderCurrencyToggle() {
-    const inrBtn = document.getElementById('curr-inr');
-    const usdBtn = document.getElementById('curr-usd');
-    if (inrBtn) inrBtn.classList.toggle('active', state.currency === 'INR');
-    if (usdBtn) usdBtn.classList.toggle('active', state.currency === 'USD');
+    // INR-only; nothing to toggle.
   }
 
   // Updates the hero headline price AND the target rank — both scoped to whichever
@@ -921,26 +908,12 @@ class UIManager {
       }
     }
 
-    const amountLabel = document.getElementById('bid-amount-label');
-    if (amountLabel) {
-      amountLabel.textContent = state.currency === 'INR' ? `Base Bid Amount (₹ INR) *` : `Base Bid Amount ($ USD) *`;
-    }
-
-    const equivBadge = document.getElementById('bid-equivalent-badge');
-    if (equivBadge) {
-      equivBadge.textContent = state.currency === 'INR' ? `≈ ${state.formatUSDExact(subtotalUSD)} (estimate, billed in INR)` : `≈ ${state.formatINRExact(subtotalINR)}`;
-    }
-
-    const subtotalUsdEl = document.getElementById('breakup-subtotal-usd');
     const subtotalInrEl = document.getElementById('breakup-subtotal-inr');
-    const totalUsdEl = document.getElementById('breakup-total-usd');
     const totalInrEl = document.getElementById('breakup-total-inr');
     const rankBadgeEl = document.getElementById('breakup-projected-rank');
 
-    if (subtotalUsdEl) subtotalUsdEl.textContent = `≈ ${state.formatUSDExact(subtotalUSD)} (estimate)`;
     if (subtotalInrEl) subtotalInrEl.textContent = state.formatINRExact(subtotalINR);
-    if (totalUsdEl) totalUsdEl.textContent = `≈ ${state.formatUSDExact(totalUSD)} USD`;
-    if (totalInrEl) totalInrEl.textContent = `${state.formatINRExact(totalINR)} INR`;
+    if (totalInrEl) totalInrEl.textContent = state.formatINRExact(totalINR);
 
     if (rankBadgeEl) {
       rankBadgeEl.textContent = `#${projectedRank}`;

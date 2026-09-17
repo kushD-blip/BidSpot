@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1200">
+  <title>BidSpot OG Card</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: linear-gradient(145deg, #FDF6F0 0%, #F8EDE5 40%, #F4E8DE 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .bg-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+      background-image:
+        radial-gradient(circle at 20% 30%, #8B1E2E 1px, transparent 1px),
+        radial-gradient(circle at 80% 70%, #8B1E2E 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 24px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 56px;
+      height: 56px;
+      background: #8B1E2E;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-text {
+      font-size: 52px;
+      font-weight: 800;
+      color: #1A1A1A;
+      letter-spacing: -0.03em;
+    }
+
+    .logo-text span {
+      color: #8B1E2E;
+    }
+
+    .tagline {
+      font-size: 28px;
+      font-weight: 600;
+      color: #444;
+      max-width: 700px;
+      line-height: 1.35;
+    }
+
+    .highlight {
+      color: #8B1E2E;
+      font-weight: 800;
+    }
+
+    .features {
+      display: flex;
+      gap: 32px;
+      margin-top: 8px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .feature-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #8B1E2E;
+    }
+
+    .url {
+      font-size: 22px;
+      font-weight: 800;
+      color: #8B1E2E;
+      letter-spacing: 0.02em;
+      margin-top: 4px;
+      padding: 8px 28px;
+      background: rgba(139, 30, 46, 0.08);
+      border-radius: 100px;
+    }
+
+    .badge {
+      position: absolute;
+      top: 28px;
+      right: 36px;
+      background: #8B1E2E;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 6px 18px;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .min-bid {
+      position: absolute;
+      bottom: 28px;
+      right: 36px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  <div class="badge">Live Bidding Leaderboard</div>
+
+  <div class="card">
+    <div class="logo-row">
+      <div class="logo-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13 5 5"></path><path d="m3 21 3-3"></path><path d="m9 15 2 2"></path><path d="m11 9 5 5"></path><path d="m13 3 6 6-6 6-6-6 6-6Z"></path></svg>
+      </div>
+      <div class="logo-text">Bid<span>Spot</span>.in</div>
+    </div>
+
+    <div class="tagline">
+      Pay to <span class="highlight">rank your website</span>.<br>
+      Get real traffic. No ads.
+    </div>
+
+    <div class="features">
+      <div class="feature"><div class="feature-dot"></div> Live Rankings</div>
+      <div class="feature"><div class="feature-dot"></div> Real Clicks</div>
+      <div class="feature"><div class="feature-dot"></div> Starts at ₹100</div>
+    </div>
+
+    <div class="url">bidspot.in</div>
+  </div>
+
+  <div class="min-bid">India's first live bidding leaderboard for startups</div>
+</body>
+</html>

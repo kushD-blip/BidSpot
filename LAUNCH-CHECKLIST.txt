@@ -1,0 +1,193 @@
+BidSpot.in — Launch Checklist & Marketing Plan
+================================================
+Created: 2026-09-17
+Status: Pre-launch
+
+
+=== PART 1: TECHNICAL FIXES (DO BEFORE LAUNCH) ===
+
+1. FIX DNS / SSL
+   - Go to Hostinger DNS settings for bidspot.in
+   - Delete ALL existing A records (currently pointing to 64.29.17.65 and 216.198.79.1)
+   - Add one A record:  @  ->  76.76.21.21  (Vercel)
+   - Ensure CNAME record: www -> cname.vercel-dns.com
+   - Wait 5-30 min for propagation, then verify: https://bidspot.in loads with HTTPS
+   - Verify in Vercel dashboard: Settings > Domains > bidspot.in shows "Valid Configuration"
+
+2. SWAP RAZORPAY TO LIVE KEYS
+   - Go to https://vercel.com -> your project -> Settings -> Environment Variables
+   - Find RAZORPAY_KEY_ID: replace rzp_test_... with your live key (starts with rzp_live_...)
+   - Find RAZORPAY_KEY_SECRET: replace the test secret with your live secret
+   - Both are in Razorpay Dashboard > Settings > API Keys (Live Mode tab)
+   - After saving: go to Deployments -> redeploy the latest (or push any commit)
+   - TEST: make a real Rs 100 bid on a test listing, verify payment goes through
+
+3. REMOVE INSIGHTDROP TEST DATA
+   Open Supabase SQL Editor (https://supabase.com/dashboard -> your project -> SQL Editor)
+   Run these queries one at a time:
+
+   -- Step 1: Find the InsightDrop listing ID
+   SELECT id, title FROM listings WHERE title ILIKE '%insightdrop%' OR title ILIKE '%insight drop%';
+
+   -- Step 2: Delete activity feed entries for that listing
+   DELETE FROM activity_feed WHERE listing_id = '<paste-id-here>';
+
+   -- Step 3: Delete bids for that listing
+   DELETE FROM bids WHERE listing_id = '<paste-id-here>';
+
+   -- Step 4: Delete the listing itself
+   DELETE FROM listings WHERE id = '<paste-id-here>';
+
+4. ROTATE RESEND API KEY (SECURITY)
+   - The Resend key re_EvXg7gNj_... was exposed in a prior chat session
+   - Go to https://resend.com/api-keys
+   - Revoke the old key
+   - Create a new one with the same permissions
+   - Update RESEND_API_KEY in Vercel env vars
+   - Redeploy
+
+5. CREATE OG CARD IMAGE
+   - Design a 1200x630px image for social sharing (LinkedIn/Twitter previews)
+   - Include: BidSpot logo, tagline "Pay to Rank Your Website", URL bidspot.in
+   - Save as og-card.png in the project root
+   - Deploy so https://bidspot.in/og-card.png resolves
+   - Test with https://www.opengraph.xyz/ by entering bidspot.in
+
+
+=== PART 2: INTERNATIONAL PAYMENTS ===
+
+Razorpay supports international cards IF you enable it:
+- Razorpay Dashboard > Settings > International Payments
+- You need to enable it separately (not on by default)
+- Once enabled, Razorpay auto-converts USD/EUR/GBP to INR at checkout
+- The user sees the price in INR, but their card is charged in their currency
+- No code changes needed — it's a dashboard toggle
+- Note: International payments have slightly higher Razorpay fees (~3% vs 2%)
+
+
+=== PART 3: SECURITY STATUS ===
+
+What IS secure:
+  [x] Razorpay HMAC signature verification on payment (verify-payment.js)
+  [x] Double-check payment amount via Razorpay API fetch (prevents amount tampering)
+  [x] Supabase RLS (Row Level Security) on all tables
+  [x] HMAC-signed admin session cookies (lib/admin-auth.js)
+  [x] escapeHtml on all user-submitted fields (prevents stored XSS)
+  [x] Phone number validation server-side
+  [x] Minimum bid enforced server-side (MIN_BID_PAISE = 10000)
+  [x] .env is gitignored
+  [x] HTTPS via Vercel (once DNS is fixed)
+  [x] No secrets in client-side code
+
+What still needs action:
+  [ ] Rotate the exposed Resend API key (see step 4 above)
+  [ ] Fix DNS to get SSL working (see step 1 above)
+  [ ] Consider adding rate limiting on /api/create-order (not critical for launch)
+  [ ] Consider CSP headers (can add later via vercel.json)
+
+
+=== PART 4: MARKETING & TRAFFIC STRATEGY ===
+
+--- Phase 1: Pre-Launch (1-2 days before going public) ---
+
+Step 1: Seed the board
+  - List 3-5 real projects yourself (your own or friends')
+  - Pay real bids (Rs 100-500 each) so the board isn't empty
+  - This gives social proof when visitors land
+
+Step 2: Prepare launch content
+  - Write a LinkedIn post (founder journey angle):
+    "I built a live bidding leaderboard where startups pay for ranked visibility.
+     No ads, no algorithms — just rank by bid amount.
+     Today I'm making it public. Here's why..."
+  - Include: screenshot of the leaderboard, link to bidspot.in
+  - Prepare 2-3 variations for different platforms
+
+--- Phase 2: Launch Day ---
+
+Step 3: LinkedIn (PRIMARY channel)
+  Best timing: Tuesday-Thursday, 8:00-9:30 AM IST
+  - Post the founder story
+  - Tag 5-10 founder friends who might bid
+  - Reply to every comment within 2 hours
+  - Ask 3 friends to comment (algorithm boost)
+
+Step 4: IndieHackers
+  - Post in "Show IH" section
+  - Title: "I built a live bidding leaderboard for startups — BidSpot.in"
+  - Focus on the product story, not just the link
+  - Include metrics: how long it took, stack, first bid
+
+Step 5: Reddit
+  Target subreddits (post 1 per day, don't spam):
+  - r/SideProject (most receptive)
+  - r/startups (more critical but higher reach)
+  - r/indiehackers
+  - r/webdev (focus on the tech)
+  - r/EntrepreneurRideAlong
+  Key: Read each sub's rules. Some ban self-promo. Frame as "I built this, feedback?"
+
+Step 6: Twitter/X
+  - Thread format: problem -> solution -> how it works -> screenshot -> link
+  - Tag indie maker accounts who might retweet
+  - Use hashtags: #buildinpublic #indiehacker #startup
+
+--- Phase 3: Week 1-2 Post-Launch ---
+
+Step 7: Direct outreach
+  - Identify 20 startups/tools that would benefit from visibility
+  - Send personalized LinkedIn DMs:
+    "Hey [name], I saw [their product]. I built BidSpot.in — a live bidding
+     leaderboard where startups pay for ranked visibility spots. Rs 100 minimum.
+     Would love to have [product name] on the board. Interested?"
+  - Track responses in a simple spreadsheet
+
+Step 8: Content flywheel
+  - Post daily/weekly updates on LinkedIn:
+    "Day 3: 12 listings, Rs 4,200 in bids, 340 clicks delivered"
+    Real numbers only — this is your brand differentiator
+  - Share interesting bid battles ("Two SaaS tools fighting for #1")
+  - Share click data screenshots from analytics
+
+Step 9: Community engagement
+  - Join Slack/Discord communities: SaaSBoomi, IndianStartups, GrowthHackers
+  - Don't spam links. Contribute first, mention BidSpot when relevant.
+  - Offer free listing slots to community moderators
+
+--- Phase 4: Month 2+ ---
+
+Step 10: SEO (slow burn, compounds)
+  - Target keywords: "buy website traffic India", "startup visibility", "paid leaderboard"
+  - Write 2 blog posts/month on the about page or a /blog route
+  - Get backlinks from startup directories (ProductHunt, BetaList, SaaSHub)
+
+Step 11: Referral loop
+  - Add "Refer a friend" CTA: if someone bids after your referral, you get a ranking boost
+  - This can be a V2 feature once you have traction
+
+Step 12: Partnerships
+  - Approach startup incubators and accelerators
+  - Offer bulk listing deals (e.g., "list your entire cohort")
+  - Co-market with complementary tools (analytics, landing page builders)
+
+
+=== PART 5: LAUNCH TIMING ===
+
+Best window: Tuesday to Thursday, 8:00-9:30 AM IST
+Reasoning:
+  - LinkedIn's algorithm favors early-week posts
+  - Indian professionals are most active 8-10 AM
+  - Avoid Monday (catching up) and Friday (winding down)
+  - Avoid weekends for B2B products
+
+Recommended launch date: This week Tuesday-Thursday, once DNS/SSL and Razorpay
+live keys are confirmed working.
+
+Checklist before hitting "Post":
+  [ ] DNS fixed, HTTPS working on bidspot.in
+  [ ] Razorpay live keys in Vercel, test payment successful
+  [ ] InsightDrop test data removed
+  [ ] Board seeded with 3-5 real listings
+  [ ] OG card image deployed (for link previews)
+  [ ] Resend API key rotated
+  [ ] LinkedIn post drafted and proofread
