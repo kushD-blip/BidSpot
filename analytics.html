@@ -45,7 +45,10 @@
 
   <section class="analytics-hero">
     <div class="analytics-hero-inner">
-      <div class="analytics-hero-badge">Live data</div>
+      <div class="analytics-hero-badge">
+        <span class="analytics-pulse"></span>
+        Live data
+      </div>
       <h1>Board Analytics</h1>
       <p>Every number on this page comes straight from the database. Nothing is estimated, inflated, or delayed.</p>
     </div>
@@ -53,54 +56,89 @@
 
   <main class="analytics-main">
 
-    <section class="analytics-kpi-row" id="stat-cards" aria-label="Key metrics">
-      <div class="analytics-kpi">
-        <div class="analytics-kpi-icon">
+    <!-- KPI Row -->
+    <section class="a-kpi-row" aria-label="Key metrics">
+      <div class="a-kpi">
+        <div class="a-kpi-icon a-kpi-icon--default">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
         </div>
-        <div class="analytics-kpi-body">
-          <div class="analytics-kpi-value" id="kpi-listings">—</div>
-          <div class="analytics-kpi-label">Live listings</div>
+        <div class="a-kpi-body">
+          <div class="a-kpi-value" id="kpi-listings">—</div>
+          <div class="a-kpi-label">Live listings</div>
         </div>
       </div>
-      <div class="analytics-kpi analytics-kpi-accent">
-        <div class="analytics-kpi-icon">
+      <div class="a-kpi a-kpi--accent">
+        <div class="a-kpi-icon a-kpi-icon--accent">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
         </div>
-        <div class="analytics-kpi-body">
-          <div class="analytics-kpi-value" id="kpi-volume">—</div>
-          <div class="analytics-kpi-label">Total volume bid</div>
+        <div class="a-kpi-body">
+          <div class="a-kpi-value" id="kpi-volume">—</div>
+          <div class="a-kpi-label">Total volume bid</div>
         </div>
       </div>
-      <div class="analytics-kpi">
-        <div class="analytics-kpi-icon">
+      <div class="a-kpi">
+        <div class="a-kpi-icon a-kpi-icon--teal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
         </div>
-        <div class="analytics-kpi-body">
-          <div class="analytics-kpi-value" id="kpi-clicks">—</div>
-          <div class="analytics-kpi-label">Total clicks</div>
+        <div class="a-kpi-body">
+          <div class="a-kpi-value" id="kpi-clicks">—</div>
+          <div class="a-kpi-label">Total clicks received</div>
         </div>
       </div>
-      <div class="analytics-kpi">
-        <div class="analytics-kpi-icon">
+      <div class="a-kpi">
+        <div class="a-kpi-icon a-kpi-icon--green">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         </div>
-        <div class="analytics-kpi-body">
-          <div class="analytics-kpi-value" id="kpi-categories">—</div>
-          <div class="analytics-kpi-label">Active categories</div>
+        <div class="a-kpi-body">
+          <div class="a-kpi-value" id="kpi-categories">—</div>
+          <div class="a-kpi-label">Active categories</div>
         </div>
       </div>
     </section>
 
-    <section class="analytics-section">
-      <div class="analytics-section-head">
-        <h2>Volume by category</h2>
-        <span class="analytics-hint">Ranked by total bids placed</span>
-      </div>
-      <div id="category-breakdown" class="analytics-category-list">
-        <!-- Rendered via js/analytics.js -->
-      </div>
-    </section>
+    <!-- Row 2: Bid Activity Chart + Top Categories -->
+    <div class="a-grid-2col">
+      <section class="a-panel">
+        <div class="a-panel-head">
+          <h2>Bid activity</h2>
+          <span class="a-hint">Last 7 days</span>
+        </div>
+        <div id="daily-chart" class="a-chart-area">
+          <div class="a-chart-empty">Loading…</div>
+        </div>
+      </section>
+      <section class="a-panel">
+        <div class="a-panel-head">
+          <h2>Top performing categories</h2>
+          <a href="./categories.html" class="a-view-all">View all →</a>
+        </div>
+        <p class="a-panel-subtitle">Based on total clicks received</p>
+        <div id="top-categories" class="a-top-cats">
+          <div class="a-chart-empty">Loading…</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Row 3: Recent Bids + Board Highlights -->
+    <div class="a-grid-2col">
+      <section class="a-panel">
+        <div class="a-panel-head">
+          <h2>Recent bids</h2>
+          <a href="./index.html" class="a-view-all">View all →</a>
+        </div>
+        <div id="recent-bids" class="a-table-wrap">
+          <div class="a-chart-empty">Loading…</div>
+        </div>
+      </section>
+      <section class="a-panel">
+        <div class="a-panel-head">
+          <h2>Performance insights</h2>
+        </div>
+        <div id="highlights" class="a-highlights">
+          <div class="a-chart-empty">Loading…</div>
+        </div>
+      </section>
+    </div>
 
   </main>
 
